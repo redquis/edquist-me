@@ -47,6 +47,27 @@
     ]
   };
 
+  const VIDEO_GAMES = [
+    ["Final Fantasy VII", "the one that ruined every other story for me."],
+    ["The Legend of Zelda: Majora's Mask", "three days, one moon, and a permanent distrust of deadlines."],
+    ["Clair Obscur: Expedition 33", "proof the genre still has new tricks left in it."],
+    ["Destiny 2", "I can explain the hours. I cannot justify them."],
+    ["Halo: Reach", "you know exactly how it ends and it gets you anyway."],
+    ["The Witcher 3", "went to clear one question mark, lost a weekend."],
+    ["Kingdom Hearts II", "the plot is nonsense and the combat is perfect. worth it."],
+    ["Mass Effect 2", "best cast in gaming. the suicide mission still holds up."],
+    ["Resident Evil 4", "the merchant is the real protagonist."],
+    ["Gears of War 3", "peak couch co-op. active reload is muscle memory now."]
+  ];
+
+  const BOARD_GAMES = [
+    ["Terraforming Mars", "engine building until the engine builds itself."],
+    ["Risk: Legacy", "we wrote on the board and never went back. still the best campaign I have played."],
+    ["Pandemic", "the gateway co-op, and the fastest way to learn how your friends handle stress."],
+    ["Unmatched", "tight, asymmetric, and over before anyone gets bored."],
+    ["Scythe", "gorgeous, mean, and shorter than it looks."]
+  ];
+
   // Figlet "ANSI Regular", generated rather than hand-drawn. 93 columns.
   const BANNER_ONE_LINE = [
     "██████  ██    ██  █████  ███    ██     ███████ ██████   ██████  ██    ██ ██ ███████ ████████ ",
@@ -187,6 +208,24 @@
     return m + " minute" + (m === 1 ? "" : "s") + ", " + (s % 60) + " seconds";
   }
 
+  /* Ranked lists print title and comment on separate lines so a phone never has
+     to wrap a title mid-word. */
+  function printList(heading, items, footer) {
+    print();
+    print(heading, "bright");
+    print();
+    items.forEach(function (item, i) {
+      const n = String(i + 1);
+      print("  " + " ".repeat(2 - n.length) + n + ". " + item[0]);
+      print(item[1], "dim sub");
+    });
+    if (footer) {
+      print();
+      print(footer, "warn");
+    }
+    print();
+  }
+
   function cat(name) {
     const file = FILES[name] || FILES[name + ".txt"];
     if (!file) return print("cat: " + name + ": no such file (try `ls`)", "err");
@@ -263,6 +302,18 @@
       run: function (args) {
         if (!args[0]) return print("usage: cat <file>   (try `ls`)", "err");
         cat(args[0]);
+      }
+    },
+    videogames: {
+      desc: "my top 10 video games",
+      run: function () { printList("top 10 video games", VIDEO_GAMES); }
+    },
+    boardgames: {
+      desc: "my top 5 board games",
+      run: function () {
+        printList("top 5 board games", BOARD_GAMES,
+          "and no, none of mine made the list. putting your own games in your own " +
+          "top 5 is a bit much, even for me. type `games` and judge for yourself.");
       }
     },
     roll: { desc: "roll dice - roll 2d20", run: function (args) { rollDice(args[0]); } },

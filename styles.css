@@ -92,6 +92,9 @@ body {
   line-height: 0.92;
   letter-spacing: 0;
 }
+/* Hanging indent so a wrapped list comment stays under its entry on mobile. */
+.line.sub { padding-left: 6ch; }
+
 .line a { color: var(--link); text-underline-offset: 3px; }
 .line a:hover { color: var(--fg-bright); background: rgba(127,231,255,.12); }
 .line .k { color: var(--accent); }
