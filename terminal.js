@@ -70,6 +70,14 @@
     bannerEls.forEach(function (el) { el.style.fontSize = size + "px"; });
   }
 
+  /* The chip bar is fixed over the shell and wraps to one or two rows depending
+     on width, so reserve exactly its height rather than a per-breakpoint guess. */
+  function fitChips() {
+    const chips = document.querySelector(".chips");
+    if (!chips) return;
+    document.documentElement.style.setProperty("--chips-h", chips.offsetHeight + "px");
+  }
+
   /* ---------- output ---------- */
 
   const ENTITIES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -453,7 +461,10 @@
     });
   }
 
-  window.addEventListener("resize", fitBanner, { passive: true });
+  window.addEventListener("resize", function () {
+    fitChips();
+    fitBanner();
+  }, { passive: true });
 
   /* ---------- boot ---------- */
 
@@ -463,6 +474,8 @@
         document.documentElement.setAttribute("data-theme", "amber");
       }
     } catch (e) { /* private mode */ }
+
+    fitChips();
 
     const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const wait = function (ms) { return skip ? Promise.resolve() : sleep(ms); };
@@ -483,7 +496,9 @@
 
     bannerEls = BANNER_WIDE.map(function (l) { return print(l, "big"); });
     fitBanner();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBanner);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { fitChips(); fitBanner(); });
+    }
     print();
     print("  software engineer · board game designer · professional yak shaver", "dim");
     await wait(400);
