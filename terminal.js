@@ -47,35 +47,60 @@
     ]
   };
 
-  // Figlet "ANSI Regular". Every glyph is exactly 8 columns wide; do not re-wrap.
-  const BANNER_WIDE = [
-    "███████ ██████   ██████  ██    ██ ██ ███████ ████████",
-    "██      ██   ██ ██    ██ ██    ██ ██ ██         ██   ",
-    "█████   ██   ██ ██    ██ ██    ██ ██ ███████    ██   ",
-    "██      ██   ██ ██ ▄▄ ██ ██    ██ ██      ██    ██   ",
-    "███████ ██████   ██████   ██████  ██ ███████    ██   "
+  // Figlet "ANSI Regular", generated rather than hand-drawn. 93 columns.
+  const BANNER_ONE_LINE = [
+    "██████  ██    ██  █████  ███    ██     ███████ ██████   ██████  ██    ██ ██ ███████ ████████ ",
+    "██   ██  ██  ██  ██   ██ ████   ██     ██      ██   ██ ██    ██ ██    ██ ██ ██         ██    ",
+    "██████    ████   ███████ ██ ██  ██     █████   ██   ██ ██    ██ ██    ██ ██ ███████    ██    ",
+    "██   ██    ██    ██   ██ ██  ██ ██     ██      ██   ██ ██ ▄▄ ██ ██    ██ ██      ██    ██    ",
+    "██   ██    ██    ██   ██ ██   ████     ███████ ██████   ██████   ██████  ██ ███████    ██    ",
+    "                                                           ▀▀                               "
   ];
-  /* The banner is fixed-width art, so scale it to the shell instead of letting
-     it clip. Measured rather than assumed: the webfont may not have loaded yet. */
-  let bannerEls = [];
+
+  // Same wordmark stacked, so phones get big legible glyphs instead of 93
+  // columns squeezed into 360px. 54 columns.
+  const BANNER_STACKED = [
+    "██████  ██    ██  █████  ███    ██ ",
+    "██   ██  ██  ██  ██   ██ ████   ██ ",
+    "██████    ████   ███████ ██ ██  ██ ",
+    "██   ██    ██    ██   ██ ██  ██ ██ ",
+    "██   ██    ██    ██   ██ ██   ████ ",
+    "",
+    "███████ ██████   ██████  ██    ██ ██ ███████ ████████ ",
+    "██      ██   ██ ██    ██ ██    ██ ██ ██         ██    ",
+    "█████   ██   ██ ██    ██ ██    ██ ██ ███████    ██    ",
+    "██      ██   ██ ██ ▄▄ ██ ██    ██ ██      ██    ██    ",
+    "███████ ██████   ██████   ██████  ██ ███████    ██    ",
+    "                    ▀▀                                "
+  ];
+
+  /* The banner is fixed-width art, so scale it to the shell rather than let it
+     clip, and drop to the stacked layout when one line would render too small
+     to read. Measured, not assumed: the webfont may not have loaded yet. */
+  let bannerEl = null;
   function fitBanner() {
-    if (!bannerEls.length) return;
-    const avail = screen.clientWidth;
-    if (!avail) return;
-    const probe = bannerEls[0];
-    probe.style.fontSize = "16px";
-    const natural = probe.scrollWidth;
-    if (!natural) return;
-    const size = Math.max(6, Math.min(30, Math.floor(16 * ((avail - 4) / natural))));
-    bannerEls.forEach(function (el) { el.style.fontSize = size + "px"; });
+    if (!bannerEl) return;
+    const avail = screen.clientWidth - 4;
+    if (avail <= 0) return;
+
+    function tryLayout(lines) {
+      bannerEl.textContent = lines.join("\n");
+      bannerEl.style.fontSize = "16px";
+      const natural = bannerEl.scrollWidth;
+      return natural ? 16 * (avail / natural) : 0;
+    }
+
+    let size = tryLayout(BANNER_ONE_LINE);
+    if (size < 11) size = tryLayout(BANNER_STACKED);
+    bannerEl.style.fontSize = Math.max(6, Math.min(30, Math.floor(size))) + "px";
   }
 
-  /* The chip bar is fixed over the shell and wraps to one or two rows depending
-     on width, so reserve exactly its height rather than a per-breakpoint guess. */
-  function fitChips() {
-    const chips = document.querySelector(".chips");
-    if (!chips) return;
-    document.documentElement.style.setProperty("--chips-h", chips.offsetHeight + "px");
+  /* 100dvh does not shrink when a mobile keyboard opens, so track the visual
+     viewport and let the shell size to what is actually on screen. */
+  function fitViewport() {
+    const vv = window.visualViewport;
+    const h = vv ? vv.height : window.innerHeight;
+    if (h) document.documentElement.style.setProperty("--app-h", Math.round(h) + "px");
   }
 
   /* ---------- output ---------- */
@@ -193,7 +218,8 @@
         print();
         print("ryan edquist", "bright");
         print("software engineer · loyalty & commerce platforms · board game designer");
-        print("somewhere with reliable coffee and unreliable requirements", "dim");
+        print("aspiring pro disc golfer · gamer");
+        print("somewhere with reliable tea and unreliable requirements", "dim");
         print();
       }
     },
@@ -282,18 +308,21 @@
           ["shell", "hand-rolled, ~400 lines of JS"],
           ["uptime", uptime()],
           ["editor", "whichever one already has the file open"],
-          ["cpu", "caffeine-limited"],
+          ["cpu", "tea-limited"],
           ["memory", "leaks, but slowly"],
           ["theme", (document.documentElement.getAttribute("data-theme") || "green") + " phosphor"]
         ];
         print();
-        const rows = Math.max(art.length, info.length);
+        // The two-column layout needs ~52 characters; below that the art and the
+        // values wrap into each other, so drop the logo and keep the data.
+        const narrow = screen.clientWidth < 460;
+        const rows = narrow ? info.length : Math.max(art.length, info.length);
         for (let i = 0; i < rows; i++) {
-          const left = art[i] || " ".repeat(19);
           const pair = info[i];
+          const left = narrow ? "" : (art[i] || " ".repeat(19)) + "  ";
           if (!pair) { print(left); continue; }
           const label = pair[0] ? pair[0] + " ".repeat(9 - pair[0].length) + " " : "";
-          print(left + "  " + label + pair[1]);
+          print(left + label + pair[1]);
         }
         print();
       }
@@ -327,9 +356,13 @@
         print("but the links at the bottom lead somewhere real.", "dim");
       }
     },
+    tea: {
+      hidden: true, desc: "",
+      run: function () { print("steeping... HTTP 418: this machine IS a teapot.", "warn"); }
+    },
     coffee: {
       hidden: true, desc: "",
-      run: function () { print("brewing... ERR_TEAPOT: this machine is a terminal.", "warn"); }
+      run: function () { print("we don't do that here. try `tea`.", "err"); }
     },
     rm: {
       hidden: true, desc: "",
@@ -461,10 +494,15 @@
     });
   }
 
-  window.addEventListener("resize", function () {
-    fitChips();
+  function relayout() {
+    fitViewport();
     fitBanner();
-  }, { passive: true });
+  }
+  window.addEventListener("resize", relayout, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", relayout, { passive: true });
+    window.visualViewport.addEventListener("scroll", fitViewport, { passive: true });
+  }
 
   /* ---------- boot ---------- */
 
@@ -475,7 +513,7 @@
       }
     } catch (e) { /* private mode */ }
 
-    fitChips();
+    fitViewport();
 
     const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const wait = function (ms) { return skip ? Promise.resolve() : sleep(ms); };
@@ -494,13 +532,13 @@
     await wait(320);
     print();
 
-    bannerEls = BANNER_WIDE.map(function (l) { return print(l, "big"); });
+    bannerEl = print("", "big");
     fitBanner();
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { fitChips(); fitBanner(); });
+      document.fonts.ready.then(function () { fitViewport(); fitBanner(); });
     }
     print();
-    print("  software engineer · board game designer · professional yak shaver", "dim");
+    print("  software engineer · board game designer · aspiring pro disc golfer · gamer", "dim");
     await wait(400);
     print();
     printHTML('type <span class="k">help</span> to get started, or ' +

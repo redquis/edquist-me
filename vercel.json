@@ -19,7 +19,7 @@
     {
       "source": "/:file(styles.css|terminal.js|rain.js|analytics.js)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     }
   ]
