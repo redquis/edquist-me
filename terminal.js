@@ -78,15 +78,14 @@
     "                                                           ▀▀                               "
   ];
 
-  // Same wordmark stacked, so phones get big legible glyphs instead of 93
-  // columns squeezed into 360px. 54 columns.
-  const BANNER_STACKED = [
+  const RYAN = [
     "██████  ██    ██  █████  ███    ██ ",
     "██   ██  ██  ██  ██   ██ ████   ██ ",
     "██████    ████   ███████ ██ ██  ██ ",
     "██   ██    ██    ██   ██ ██  ██ ██ ",
-    "██   ██    ██    ██   ██ ██   ████ ",
-    "",
+    "██   ██    ██    ██   ██ ██   ████ "
+  ];
+  const EDQUIST = [
     "███████ ██████   ██████  ██    ██ ██ ███████ ████████ ",
     "██      ██   ██ ██    ██ ██    ██ ██ ██         ██    ",
     "█████   ██   ██ ██    ██ ██    ██ ██ ███████    ██    ",
@@ -95,25 +94,46 @@
     "                    ▀▀                                "
   ];
 
-  /* The banner is fixed-width art, so scale it to the shell rather than let it
-     clip, and drop to the stacked layout when one line would render too small
-     to read. Measured, not assumed: the webfont may not have loaded yet. */
+  /* Stacked layout for phones. RYAN is centred over EDQUIST on a shared grid so
+     both words keep the same cell size: scaling each to full width instead would
+     leave RYAN with visibly heavier strokes. */
+  const BANNER_STACKED = (function () {
+    const width = Math.max.apply(null, EDQUIST.map(function (l) { return l.length; }));
+    const pad = " ".repeat(Math.floor((width - RYAN[0].length) / 2));
+    return RYAN.map(function (l) { return pad + l; }).concat(["", ""], EDQUIST);
+  })();
+
+  /* Drawn as SVG rather than set as text. Block characters do not tile: at small
+     sizes the fractional glyph advance and line height leave a lattice of seams
+     through every letter, and two words of different column counts render at
+     different sizes. One rect per filled cell sidesteps both, and stays crisp at
+     any width or pixel ratio. */
+  function bannerSvg(lines) {
+    const cols = Math.max.apply(null, lines.map(function (l) { return l.length; }));
+    let rects = "";
+    for (let y = 0; y < lines.length; y++) {
+      const line = lines[y];
+      for (let x = 0; x < line.length; x++) {
+        const ch = line.charAt(x);
+        if (ch === "█") rects += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+        else if (ch === "▄") rects += '<rect x="' + x + '" y="' + (y + 0.5) + '" width="1" height="0.5"/>';
+        else if (ch === "▀") rects += '<rect x="' + x + '" y="' + y + '" width="1" height="0.5"/>';
+      }
+    }
+    return '<svg viewBox="0 0 ' + cols + " " + lines.length + '" width="100%" ' +
+      'preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" ' +
+      'fill="currentColor" role="img" aria-label="Ryan Edquist">' + rects + "</svg>";
+  }
+
   let bannerEl = null;
+  let bannerStacked = null;
   function fitBanner() {
     if (!bannerEl) return;
-    const avail = screen.clientWidth - 4;
-    if (avail <= 0) return;
-
-    function tryLayout(lines) {
-      bannerEl.textContent = lines.join("\n");
-      bannerEl.style.fontSize = "16px";
-      const natural = bannerEl.scrollWidth;
-      return natural ? 16 * (avail / natural) : 0;
-    }
-
-    let size = tryLayout(BANNER_ONE_LINE);
-    if (size < 11) size = tryLayout(BANNER_STACKED);
-    bannerEl.style.fontSize = Math.max(6, Math.min(30, Math.floor(size))) + "px";
+    // One line needs room for 93 columns before the strokes get too thin to read.
+    const stacked = screen.clientWidth < 620;
+    if (stacked === bannerStacked) return;
+    bannerStacked = stacked;
+    bannerEl.innerHTML = bannerSvg(stacked ? BANNER_STACKED : BANNER_ONE_LINE);
   }
 
   /* 100dvh does not shrink when a mobile keyboard opens, so track the visual
@@ -583,7 +603,7 @@
     await wait(320);
     print();
 
-    bannerEl = print("", "big");
+    bannerEl = print("", "banner");
     fitBanner();
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () { fitViewport(); fitBanner(); });

@@ -83,15 +83,15 @@ body {
 .line.bright { color: var(--fg-bright); }
 .line.warn { color: var(--accent); }
 .line.err { color: #ff6b5e; text-shadow: 0 0 6px rgba(255,107,94,.4); }
-.line.big {
-  color: var(--fg-bright);
-  font-weight: 400;
-  font-size: clamp(8px, 1.55vw, 17px);
-  /* Block glyphs must tile edge to edge, so the .line min-height has to go. */
+/* The wordmark is an inline SVG, so it needs no font metrics at all. */
+.line.banner {
   min-height: 0;
-  line-height: 0.92;
-  letter-spacing: 0;
+  color: var(--fg-bright);
+  margin: 2px 0 6px;
+  filter: drop-shadow(0 0 7px rgba(74, 246, 38, .4));
 }
+.line.banner svg { display: block; width: 100%; height: auto; }
+html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 176, 0, .4)); }
 /* Hanging indent so a wrapped list comment stays under its entry on mobile. */
 .line.sub { padding-left: 6ch; }
 
@@ -163,6 +163,3 @@ body {
   .scanlines { opacity: .18; }
 }
 
-/* ASCII banner is art, not prose - it must not reflow. */
-.line.big { white-space: pre; overflow: hidden; }
-.line.big:empty { min-height: .8em; }
