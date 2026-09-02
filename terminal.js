@@ -8,7 +8,7 @@
 
   const LINKS = {
     github: ["https://github.com/redquis", "GitHub - code, mostly in public"],
-    linkedin: ["https://www.linkedin.com/in/ryanedquist", "LinkedIn - the professional one"],
+    linkedin: ["https://www.linkedin.com/in/redquist", "LinkedIn - the professional one"],
     games: ["https://illustriousgames.com", "Illustrious Games - board games I design and publish"],
     email: ["mailto:ryan@edquist.me", "ryan@edquist.me"]
   };
@@ -42,7 +42,7 @@
     "contact.txt": [
       "  email      ryan@edquist.me",
       "  github     github.com/redquis",
-      "  linkedin   linkedin.com/in/ryanedquist",
+      "  linkedin   linkedin.com/in/redquist",
       "  games      illustriousgames.com"
     ]
   };
@@ -209,7 +209,7 @@
       }
     },
     github: { desc: "-> github.com/redquis", run: function () { openLink("github"); } },
-    linkedin: { desc: "-> linkedin.com/in/ryanedquist", run: function () { openLink("linkedin"); } },
+    linkedin: { desc: "-> linkedin.com/in/redquist", run: function () { openLink("linkedin"); } },
     games: { desc: "-> illustriousgames.com", run: function () { openLink("games"); } },
     email: { desc: "-> ryan@edquist.me", run: function () { openLink("email"); } },
     ls: {
