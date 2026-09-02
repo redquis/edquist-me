@@ -220,6 +220,47 @@
     if (n === 1 && rolls[0] === 1) print("  a 1. this is why we playtest.", "warn");
   }
 
+  /* The secret-found fanfare, synthesised rather than shipped as an audio file:
+     eight square-wave notes, no asset and no network request. AudioContext is
+     created lazily because browsers only allow it inside a user gesture, and
+     every command runs inside a keypress or a click. */
+  const SECRET_JINGLE = [
+    [783.99, 0.13], [739.99, 0.13], [622.25, 0.13], [440.00, 0.13],
+    [415.30, 0.13], [659.25, 0.13], [830.61, 0.13], [1046.50, 0.62]
+  ];
+  let audioCtx = null;
+  let muted = false;
+  try { muted = localStorage.getItem("muted") === "1"; } catch (e) { /* private mode */ }
+
+  function playJingle() {
+    if (muted) return;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      audioCtx = audioCtx || new Ctx();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      let t = audioCtx.currentTime + 0.03;
+      SECRET_JINGLE.forEach(function (note) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(note[0], t);
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.16, t + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + note[1]);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + note[1] + 0.02);
+        t += note[1];
+      });
+    } catch (e) { /* no audio device, or autoplay policy said no */ }
+  }
+
+  function secretFound() {
+    print("♪  secret found" + (muted ? " (muted, type `mute` to hear it)" : ""), "warn");
+    playJingle();
+  }
+
   const START = Date.now();
   function uptime() {
     const s = Math.floor((Date.now() - START) / 1000);
@@ -427,9 +468,25 @@
         print("but the links at the bottom lead somewhere real.", "dim");
       }
     },
+    zelda: {
+      hidden: true, desc: "",
+      run: function () {
+        print("you open the chest.", "bright");
+        print("it contains: one (1) personal website.", "dim");
+      }
+    },
     tea: {
       hidden: true, desc: "",
       run: function () { print("steeping... HTTP 418: this machine IS a teapot.", "warn"); }
+    },
+    mute: {
+      hidden: true, silent: true, desc: "",
+      run: function () {
+        muted = !muted;
+        try { localStorage.setItem("muted", muted ? "1" : "0"); } catch (e) { /* private mode */ }
+        print(muted ? "sound off." : "sound on.", "warn");
+        if (!muted) playJingle();
+      }
     },
     coffee: {
       hidden: true, desc: "",
@@ -485,6 +542,9 @@
     }
     try { cmd.run(parts.slice(1)); }
     catch (err) { print("unhandled: " + err.message, "err"); }
+
+    // Every undocumented command is a secret worth announcing.
+    if (cmd.hidden && !cmd.silent) secretFound();
   }
 
   function complete() {
