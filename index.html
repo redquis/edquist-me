@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ryan@edquist.me</title>
+<meta name="description" content="Ryan Edquist — software engineer. Loyalty and commerce platforms by day, board games by night." />
+<meta name="theme-color" content="#080b08" />
+<meta property="og:title" content="ryan@edquist.me" />
+<meta property="og:description" content="Software engineer. Loyalty and commerce platforms by day, board games by night." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://edquist.me/" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080b08'/%3E%3Crect x='7' y='8' width='12' height='16' fill='%234af626'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <main class="shell" id="shell">
+    <header class="titlebar" aria-hidden="true">
+      <span class="dots"><i></i><i></i><i></i></span>
+      <span class="title">ryan@edquist.me — /bin/sh — 96&times;32</span>
+    </header>
+
+    <div class="screen" id="screen">
+      <div id="out" role="log" aria-live="polite" aria-label="Terminal output"></div>
+
+      <div class="inputline" id="inputline" hidden>
+        <span class="prompt" aria-hidden="true"><b>ryan@edquist</b>:<em>~</em>$</span>
+        <span class="typed" id="typed"></span><span class="caret" id="caret"></span>
+        <label class="sr-only" for="cmd">Type a command</label>
+        <input id="cmd" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      </div>
+    </div>
+  </main>
+
+  <nav class="chips" aria-label="Links">
+    <a href="https://github.com/redquis" target="_blank" rel="noopener">github</a>
+    <a href="https://www.linkedin.com/in/ryanedquist" target="_blank" rel="noopener">linkedin</a>
+    <a href="https://illustriousgames.com" target="_blank" rel="noopener">illustrious games</a>
+    <a href="mailto:ryan@edquist.me">email</a>
+    <button type="button" data-cmd="help">help</button>
+  </nav>
+
+  <script src="/rain.js" defer></script>
+  <script src="/terminal.js" defer></script>
+</body>
+</html>

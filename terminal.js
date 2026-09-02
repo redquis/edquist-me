@@ -1,0 +1,502 @@
+(function () {
+  const screen = document.getElementById("screen");
+  const out = document.getElementById("out");
+  const inputline = document.getElementById("inputline");
+  const typed = document.getElementById("typed");
+  const caret = document.getElementById("caret");
+  const input = document.getElementById("cmd");
+
+  const LINKS = {
+    github: ["https://github.com/redquis", "GitHub - code, mostly in public"],
+    linkedin: ["https://www.linkedin.com/in/ryanedquist", "LinkedIn - the professional one"],
+    games: ["https://illustriousgames.com", "Illustrious Games - board games I design and publish"],
+    email: ["mailto:ryan@edquist.me", "ryan@edquist.me"]
+  };
+
+  const FILES = {
+    "about.txt": [
+      "Ryan Edquist. Software engineer.",
+      "",
+      "I build loyalty and commerce platforms - the unglamorous plumbing behind",
+      "membership programs, rebates, and the checkout flows nobody thinks about",
+      "until they break. .NET on the backend, AWS underneath, and a lot of SQL",
+      "that has seen things.",
+      "",
+      "Off the clock I design board games, which is the same job with better",
+      "components and worse margins."
+    ],
+    "stack.txt": [
+      "  language    C#  ·  TypeScript  ·  SQL  ·  a defensible amount of PowerShell",
+      "  runtime     .NET / ASP.NET Core  ·  EF Core  ·  Node",
+      "  data        SQL Server  ·  Redis  ·  whatever the legacy system insists on",
+      "  cloud       AWS - ECS, Lambda, SNS/SQS, Parameter Store  ·  Terraform",
+      "  frontend    React  ·  Razor  ·  vanilla when vanilla is enough",
+      "  process     clean architecture, CQRS, and tests that actually fail"
+    ],
+    "now.txt": [
+      "  ·  Migrating a decade-old membership platform onto a modern stack,",
+      "     one endpoint at a time, without dropping a single transaction.",
+      "  ·  Playtesting the next Illustrious Games title. It is close. It is never close.",
+      "  ·  Reading changelogs the way other people read the news."
+    ],
+    "contact.txt": [
+      "  email      ryan@edquist.me",
+      "  github     github.com/redquis",
+      "  linkedin   linkedin.com/in/ryanedquist",
+      "  games      illustriousgames.com"
+    ]
+  };
+
+  // Figlet "ANSI Regular". Every glyph is exactly 8 columns wide; do not re-wrap.
+  const BANNER_WIDE = [
+    "███████ ██████   ██████  ██    ██ ██ ███████ ████████",
+    "██      ██   ██ ██    ██ ██    ██ ██ ██         ██   ",
+    "█████   ██   ██ ██    ██ ██    ██ ██ ███████    ██   ",
+    "██      ██   ██ ██ ▄▄ ██ ██    ██ ██      ██    ██   ",
+    "███████ ██████   ██████   ██████  ██ ███████    ██   "
+  ];
+  /* The banner is fixed-width art, so scale it to the shell instead of letting
+     it clip. Measured rather than assumed: the webfont may not have loaded yet. */
+  let bannerEls = [];
+  function fitBanner() {
+    if (!bannerEls.length) return;
+    const avail = screen.clientWidth;
+    if (!avail) return;
+    const probe = bannerEls[0];
+    probe.style.fontSize = "16px";
+    const natural = probe.scrollWidth;
+    if (!natural) return;
+    const size = Math.max(6, Math.min(30, Math.floor(16 * ((avail - 4) / natural))));
+    bannerEls.forEach(function (el) { el.style.fontSize = size + "px"; });
+  }
+
+  /* ---------- output ---------- */
+
+  const ENTITIES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ENTITIES[c]);
+
+  function print(text, cls) {
+    const el = document.createElement("div");
+    el.className = "line" + (cls ? " " + cls : "");
+    el.textContent = text === undefined ? "" : text;
+    out.appendChild(el);
+    scroll();
+    return el;
+  }
+
+  /* Only ever called with markup this file authors. */
+  function printHTML(html, cls) {
+    const el = document.createElement("div");
+    el.className = "line" + (cls ? " " + cls : "");
+    el.innerHTML = html;
+    out.appendChild(el);
+    scroll();
+    return el;
+  }
+
+  function scroll() { screen.scrollTop = screen.scrollHeight; }
+
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  async function typeLine(text, cls, speed) {
+    const el = print("", cls);
+    const chars = Array.from(text);
+    for (let i = 0; i < chars.length; i++) {
+      el.textContent += chars[i];
+      if (i % 2 === 0) await sleep(speed || 8);
+    }
+    scroll();
+    return el;
+  }
+
+  function anchor(href, label) {
+    const ext = href.indexOf("mailto:") === 0 ? "" : ' target="_blank" rel="noopener"';
+    return '<a href="' + esc(href) + '"' + ext + ">" + esc(label) + "</a>";
+  }
+
+  /* ---------- commands ---------- */
+
+  function openLink(key) {
+    const href = LINKS[key][0];
+    const label = LINKS[key][1];
+    const shown = href.replace(/^mailto:/, "");
+    printHTML("opening " + anchor(href, shown) + " ...", "dim");
+    print(label, "bright");
+    if (href.indexOf("mailto:") === 0) {
+      window.location.href = href;
+      return;
+    }
+    // Popup blockers allow this: every command runs inside a keypress or a click.
+    const win = window.open(href, "_blank", "noopener");
+    if (!win) print("your browser blocked that - use the link above.", "warn");
+  }
+
+  function rollDice(arg) {
+    const m = /^(\d*)d(\d+)$/i.exec((arg || "1d6").trim());
+    if (!m) return print("usage: roll [NdM]   e.g. roll 2d20", "err");
+    const n = Math.min(parseInt(m[1] || "1", 10) || 1, 20);
+    const sides = Math.min(parseInt(m[2], 10), 1000);
+    if (sides < 2) return print("a die needs at least two sides.", "err");
+    const rolls = [];
+    for (let i = 0; i < n; i++) rolls.push(1 + Math.floor(Math.random() * sides));
+    const total = rolls.reduce((a, b) => a + b, 0);
+    print("rolling " + n + "d" + sides + " ...", "dim");
+    print("  [ " + rolls.join("  ") + " ]   total: " + total, "bright");
+    if (n === 1 && rolls[0] === sides) print("  natural " + sides + ". the dice are feeling generous.", "warn");
+    if (n === 1 && rolls[0] === 1) print("  a 1. this is why we playtest.", "warn");
+  }
+
+  const START = Date.now();
+  function uptime() {
+    const s = Math.floor((Date.now() - START) / 1000);
+    if (s < 60) return s + " seconds on this page";
+    const m = Math.floor(s / 60);
+    return m + " minute" + (m === 1 ? "" : "s") + ", " + (s % 60) + " seconds";
+  }
+
+  function cat(name) {
+    const file = FILES[name] || FILES[name + ".txt"];
+    if (!file) return print("cat: " + name + ": no such file (try `ls`)", "err");
+    print();
+    file.forEach(function (l) { print(l); });
+    print();
+  }
+
+  const COMMANDS = {
+    help: {
+      desc: "list every command",
+      run: function () {
+        print();
+        print("available commands", "bright");
+        print();
+        const names = Object.keys(COMMANDS).filter(function (k) { return !COMMANDS[k].hidden; });
+        const width = Math.max.apply(null, names.map(function (k) { return k.length; }));
+        names.forEach(function (name) {
+          print("  " + name + " ".repeat(width - name.length + 4) + COMMANDS[name].desc);
+        });
+        print();
+        print("tab completes · up/down walks history · ctrl+l clears", "dim");
+        print();
+      }
+    },
+    whoami: {
+      desc: "the short version",
+      run: function () {
+        print();
+        print("ryan edquist", "bright");
+        print("software engineer · loyalty & commerce platforms · board game designer");
+        print("somewhere with reliable coffee and unreliable requirements", "dim");
+        print();
+      }
+    },
+    about: { desc: "the longer version", run: function () { cat("about.txt"); } },
+    stack: { desc: "what I build with", run: function () { cat("stack.txt"); } },
+    now: { desc: "what I am working on", run: function () { cat("now.txt"); } },
+    links: {
+      desc: "everywhere else I exist",
+      run: function () {
+        print();
+        Object.keys(LINKS).forEach(function (key) {
+          const href = LINKS[key][0];
+          const label = LINKS[key][1];
+          const pad = key + " ".repeat(10 - key.length);
+          printHTML("  " + esc(pad) + anchor(href, href.replace(/^mailto:/, "")) +
+            '  <span class="k">' + esc(label) + "</span>");
+        });
+        print();
+        print("or just type: github · linkedin · games · email", "dim");
+        print();
+      }
+    },
+    github: { desc: "-> github.com/redquis", run: function () { openLink("github"); } },
+    linkedin: { desc: "-> linkedin.com/in/ryanedquist", run: function () { openLink("linkedin"); } },
+    games: { desc: "-> illustriousgames.com", run: function () { openLink("games"); } },
+    email: { desc: "-> ryan@edquist.me", run: function () { openLink("email"); } },
+    ls: {
+      desc: "list files",
+      run: function () {
+        print();
+        Object.keys(FILES).forEach(function (name) {
+          print("  " + name + " ".repeat(14 - name.length) + FILES[name].length + " lines");
+        });
+        print();
+        print("read one with: cat about.txt", "dim");
+        print();
+      }
+    },
+    cat: {
+      desc: "read a file - cat about.txt",
+      run: function (args) {
+        if (!args[0]) return print("usage: cat <file>   (try `ls`)", "err");
+        cat(args[0]);
+      }
+    },
+    roll: { desc: "roll dice - roll 2d20", run: function (args) { rollDice(args[0]); } },
+    matrix: {
+      desc: "cycle the rain: ambient / storm / off",
+      run: function () {
+        if (!window.rain) return print("rain unavailable.", "err");
+        const level = window.rain.cycle();
+        print(["rain: off", "rain: ambient", "rain: storm. hold on to something."][level], "warn");
+      }
+    },
+    theme: {
+      desc: "phosphor color - theme amber | green",
+      run: function (args) {
+        const want = (args[0] || "").toLowerCase();
+        if (want === "amber" || want === "green") {
+          document.documentElement.setAttribute("data-theme", want === "amber" ? "amber" : "");
+          try { localStorage.setItem("theme", want); } catch (e) { /* private mode */ }
+          return print("phosphor: " + want, "warn");
+        }
+        print("usage: theme amber | green", "err");
+      }
+    },
+    neofetch: {
+      desc: "system info, obviously",
+      run: function () {
+        const art = [
+          "   ▄▄▄▄▄▄▄▄▄▄▄▄▄   ",
+          "  █             █  ",
+          "  █   ███████   █  ",
+          "  █   ██        █  ",
+          "  █   █████     █  ",
+          "  █   ██        █  ",
+          "  █   ███████   █  ",
+          "  █             █  ",
+          "   ▀▀▀▀▀▀▀▀▀▀▀▀▀   "
+        ];
+        const info = [
+          ["", "ryan@edquist.me"],
+          ["", "---------------"],
+          ["os", "human, 64-bit"],
+          ["host", "edquist.me (static, Vercel)"],
+          ["shell", "hand-rolled, ~400 lines of JS"],
+          ["uptime", uptime()],
+          ["editor", "whichever one already has the file open"],
+          ["cpu", "caffeine-limited"],
+          ["memory", "leaks, but slowly"],
+          ["theme", (document.documentElement.getAttribute("data-theme") || "green") + " phosphor"]
+        ];
+        print();
+        const rows = Math.max(art.length, info.length);
+        for (let i = 0; i < rows; i++) {
+          const left = art[i] || " ".repeat(19);
+          const pair = info[i];
+          if (!pair) { print(left); continue; }
+          const label = pair[0] ? pair[0] + " ".repeat(9 - pair[0].length) + " " : "";
+          print(left + "  " + label + pair[1]);
+        }
+        print();
+      }
+    },
+    date: { desc: "what time is it", run: function () { print(new Date().toString()); } },
+    echo: { desc: "say it back", run: function (args) { print(args.join(" ")); } },
+    history: {
+      desc: "commands this session",
+      run: function () {
+        if (!history.length) return print("nothing yet.", "dim");
+        print();
+        history.forEach(function (h, i) {
+          const n = String(i + 1);
+          print("  " + " ".repeat(Math.max(0, 3 - n.length)) + n + "  " + h);
+        });
+        print();
+      }
+    },
+    clear: { desc: "wipe the screen", run: function () { out.innerHTML = ""; } },
+    sudo: {
+      desc: "nice try",
+      run: function (args) {
+        print(args.length ? "ryan is not in the sudoers file." : "usage: sudo <command>", "err");
+        if (args.length) print("this incident has been reported.", "dim");
+      }
+    },
+    exit: {
+      desc: "leave (you cannot)",
+      run: function () {
+        print("there is no exit. there is only refresh.", "warn");
+        print("but the links at the bottom lead somewhere real.", "dim");
+      }
+    },
+    coffee: {
+      hidden: true, desc: "",
+      run: function () { print("brewing... ERR_TEAPOT: this machine is a terminal.", "warn"); }
+    },
+    rm: {
+      hidden: true, desc: "",
+      run: function (args) {
+        if (args.join(" ").indexOf("-rf") !== -1) {
+          print("deleting everything...", "err");
+          setTimeout(function () { print("kidding. it is a static site. try `clear`.", "dim"); }, 700);
+        } else {
+          print("rm: refusing to remove anything, on principle.", "err");
+        }
+      }
+    }
+  };
+
+  /* ---------- input ---------- */
+
+  const history = [];
+  let historyIndex = -1;
+  let draft = "";
+  let busy = true;
+
+  function render() {
+    typed.textContent = input.value;
+    caret.classList.toggle("off", document.activeElement !== input);
+    scroll();
+  }
+
+  function echoPrompt(cmd) {
+    printHTML('<span class="prompt"><b>ryan@edquist</b>:<em>~</em>$</span> ' + esc(cmd));
+  }
+
+  function run(raw) {
+    const line = raw.trim();
+    echoPrompt(line);
+    if (!line) return;
+    history.push(line);
+    historyIndex = -1;
+
+    const parts = line.split(/\s+/);
+    const name = parts[0].toLowerCase();
+    const cmd = COMMANDS[name];
+    if (!cmd) {
+      print(name + ": command not found. type `help`.", "err");
+      const near = Object.keys(COMMANDS).filter(function (k) {
+        return !COMMANDS[k].hidden && k.charAt(0) === name.charAt(0);
+      })[0];
+      if (near) print("did you mean `" + near + "`?", "dim");
+      return;
+    }
+    try { cmd.run(parts.slice(1)); }
+    catch (err) { print("unhandled: " + err.message, "err"); }
+  }
+
+  function complete() {
+    const value = input.value;
+    const parts = value.split(/\s+/);
+    const pool = parts.length > 1 && parts[0].toLowerCase() === "cat"
+      ? Object.keys(FILES)
+      : Object.keys(COMMANDS).filter(function (k) { return !COMMANDS[k].hidden; });
+    const frag = parts[parts.length - 1].toLowerCase();
+    const hits = pool.filter(function (k) { return k.indexOf(frag) === 0; });
+    if (!hits.length) return;
+    if (hits.length === 1) {
+      parts[parts.length - 1] = hits[0];
+      input.value = parts.join(" ") + " ";
+      return render();
+    }
+    echoPrompt(value);
+    print("  " + hits.join("   "), "dim");
+    render();
+  }
+
+  input.addEventListener("input", render);
+  input.addEventListener("blur", render);
+  input.addEventListener("focus", render);
+
+  input.addEventListener("keydown", function (e) {
+    if (busy) { e.preventDefault(); return; }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const value = input.value;
+      input.value = "";
+      run(value);
+      render();
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      complete();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!history.length) return;
+      if (historyIndex === -1) { draft = input.value; historyIndex = history.length; }
+      historyIndex = Math.max(0, historyIndex - 1);
+      input.value = history[historyIndex];
+      render();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (historyIndex === -1) return;
+      historyIndex++;
+      if (historyIndex >= history.length) { historyIndex = -1; input.value = draft; }
+      else input.value = history[historyIndex];
+      render();
+    } else if ((e.key === "l" || e.key === "L") && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      out.innerHTML = "";
+    } else if ((e.key === "c" || e.key === "C") && e.ctrlKey) {
+      e.preventDefault();
+      echoPrompt(input.value + "^C");
+      input.value = "";
+      render();
+    }
+  });
+
+  // Tapping the screen focuses the invisible input so mobile keyboards open.
+  document.addEventListener("click", function (e) {
+    if (e.target.closest("a, button")) return;
+    if (window.getSelection && String(window.getSelection())) return;
+    input.focus({ preventScroll: true });
+  });
+
+  const chipButtons = document.querySelectorAll(".chips [data-cmd]");
+  for (let i = 0; i < chipButtons.length; i++) {
+    chipButtons[i].addEventListener("click", function (e) {
+      if (busy) return;
+      input.focus({ preventScroll: true });
+      run(e.currentTarget.getAttribute("data-cmd"));
+      input.value = "";
+      render();
+    });
+  }
+
+  window.addEventListener("resize", fitBanner, { passive: true });
+
+  /* ---------- boot ---------- */
+
+  async function boot() {
+    try {
+      if (localStorage.getItem("theme") === "amber") {
+        document.documentElement.setAttribute("data-theme", "amber");
+      }
+    } catch (e) { /* private mode */ }
+
+    const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const wait = function (ms) { return skip ? Promise.resolve() : sleep(ms); };
+
+    const bootLines = [
+      ["edquist.me boot sequence - rev 1.0", "dim"],
+      ["checking memory ................ ok", "dim"],
+      ["mounting /home/ryan ............ ok", "dim"],
+      ["loading personality module ..... ok", "dim"],
+      ["locating car keys .............. FAILED", "warn"]
+    ];
+    for (const pair of bootLines) {
+      if (skip) print(pair[0], pair[1]); else await typeLine(pair[0], pair[1], 4);
+      await wait(90);
+    }
+    await wait(320);
+    print();
+
+    bannerEls = BANNER_WIDE.map(function (l) { return print(l, "big"); });
+    fitBanner();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBanner);
+    print();
+    print("  software engineer · board game designer · professional yak shaver", "dim");
+    await wait(400);
+    print();
+    printHTML('type <span class="k">help</span> to get started, or ' +
+      '<span class="k">links</span> if you are in a hurry.', "bright");
+    print();
+
+    busy = false;
+    inputline.hidden = false;
+    input.focus({ preventScroll: true });
+    render();
+  }
+
+  boot();
+})();
