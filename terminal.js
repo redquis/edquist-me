@@ -598,16 +598,26 @@
       }
     },
     hack: {
-      hidden: true, desc: "",
+      // Silent so the fanfare lands after the sequence rather than before it.
+      hidden: true, silent: true, desc: "",
       run: function () {
-        print("bypassing mainframe...", "dim");
-        print("ACCESS GRANTED", "bright");
-        print("you now have full control of a static HTML page. use it wisely.", "dim");
+        const beats = [
+          [0, "searching for the Gibson...", "dim"],
+          [500, "RISC architecture is gonna change everything.", "dim"],
+          [1050, "ACCESS GRANTED", "bright"],
+          [1400, "HACK THE PLANET!", "warn"],
+          [1900, "you now have full control of a static HTML page. use it wisely.", "dim"],
+          [2200, "mess with the best, die like the rest.", "dim"]
+        ];
+        beats.forEach(function (beat) {
+          setTimeout(function () { print(beat[1], beat[2]); }, beat[0]);
+        });
+        setTimeout(secretFound, 2500);
         // A burst, not a new resting state: storm is hard to read through.
         if (window.rain) {
           const before = window.rain.level;
-          window.rain.set(2);
-          setTimeout(function () { window.rain.set(before); }, 6000);
+          setTimeout(function () { window.rain.set(2); }, 1050);
+          setTimeout(function () { window.rain.set(before); }, 7050);
         }
       }
     },
