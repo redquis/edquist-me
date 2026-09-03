@@ -71,7 +71,8 @@
     get level() { return level; },
     set(n) {
       level = Math.max(0, Math.min(2, n | 0));
-      canvas.style.opacity = level === 2 ? "1" : level === 1 ? "0.5" : "0";
+      // Storm stays well under 1 so terminal text on top of it is still readable.
+      canvas.style.opacity = level === 2 ? "0.6" : level === 1 ? "0.5" : "0";
       if (level === 0) stop(); else start();
       return level;
     },

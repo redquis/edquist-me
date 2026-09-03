@@ -78,6 +78,30 @@
     "                                                           ▀▀                               "
   ];
 
+  const FORTUNES = [
+    "there are two hard problems in computer science, and off by one errors.",
+    "it worked on my machine, so I am shipping my machine.",
+    "the bug was in the last place I looked, because I stopped looking.",
+    "every legacy system was once someone's clever idea.",
+    "the test suite is green. the test suite is also lying.",
+    "naming things is hard. I have named this fortune `fortune`.",
+    "a deadline is just a moon that has not fallen yet.",
+    "you cannot refactor your way out of a requirements problem.",
+    "the disc always finds the one tree in the fairway.",
+    "any board game can be a two hour game if you argue about the rules."
+  ];
+
+  const THROWS = [
+    "dead centre. nobody saw it.",
+    "hits the one tree in the fairway. of course.",
+    "rolls forty feet past the basket, downhill, into water.",
+    "chains out. the disc considered it and declined.",
+    "ace. you will describe this throw for the rest of the year.",
+    "shanks hard right. blame the wind, it cannot defend itself.",
+    "parked. inside the circle, tap in.",
+    "lands in the one patch of poison ivy on the course."
+  ];
+
   const RYAN = [
     "██████  ██    ██  █████  ███    ██ ",
     "██   ██  ██  ██  ██   ██ ████   ██ ",
@@ -256,6 +280,21 @@
     } catch (e) { /* no audio device, or autoplay policy said no */ }
   }
 
+  /* Watched on raw keydown rather than as a command, so it still works while the
+     arrow keys are busy walking command history. */
+  const KONAMI = ["arrowup", "arrowup", "arrowdown", "arrowdown",
+    "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a"];
+  let konamiPos = 0;
+
+  function watchKonami(key) {
+    const k = key.toLowerCase();
+    if (k === KONAMI[konamiPos]) konamiPos++;
+    else konamiPos = (k === KONAMI[0]) ? 1 : 0;
+    if (konamiPos < KONAMI.length) return false;
+    konamiPos = 0;
+    return true;
+  }
+
   function secretFound() {
     print("♪  secret found" + (muted ? " (muted, type `mute` to hear it)" : ""), "warn");
     playJingle();
@@ -342,10 +381,10 @@
         print();
       }
     },
-    github: { desc: "-> github.com/redquis", run: function () { openLink("github"); } },
-    linkedin: { desc: "-> linkedin.com/in/redquist", run: function () { openLink("linkedin"); } },
-    games: { desc: "-> illustriousgamesllc.com", run: function () { openLink("games"); } },
-    email: { desc: "-> ryan@edquist.me", run: function () { openLink("email"); } },
+    github: { desc: "→ github.com/redquis", run: function () { openLink("github"); } },
+    linkedin: { desc: "→ linkedin.com/in/redquist", run: function () { openLink("linkedin"); } },
+    games: { desc: "→ illustriousgamesllc.com", run: function () { openLink("games"); } },
+    email: { desc: "→ ryan@edquist.me", run: function () { openLink("email"); } },
     ls: {
       desc: "list files",
       run: function () {
@@ -475,6 +514,112 @@
         print("it contains: one (1) personal website.", "dim");
       }
     },
+    xyzzy: {
+      hidden: true, desc: "",
+      run: function () { print("nothing happens.", "dim"); }
+    },
+    fortune: {
+      hidden: true, desc: "",
+      run: function () {
+        print();
+        print("  " + FORTUNES[Math.floor(Math.random() * FORTUNES.length)]);
+        print();
+      }
+    },
+    throw: {
+      hidden: true, desc: "",
+      run: function () {
+        const discs = ["a Destroyer", "a Buzzz", "a Leopard3", "a Zone", "a beat-in Roc"];
+        print("you throw " + discs[Math.floor(Math.random() * discs.length)] + "...", "dim");
+        print("  " + THROWS[Math.floor(Math.random() * THROWS.length)], "bright");
+      }
+    },
+    discgolf: {
+      hidden: true, desc: "",
+      run: function () {
+        print();
+        print("  status     aspiring pro. emphasis on aspiring.", "dim");
+        print("  putting    a work in progress, permanently", "dim");
+        print("  excuse     the wind, the lie, the disc, the trees, never the thrower", "dim");
+        print();
+        print("try `throw`.", "dim");
+      }
+    },
+    top: {
+      hidden: true, desc: "",
+      run: function () {
+        print();
+        print("  PID  COMMAND        CPU    MEM    NOTE", "bright");
+        print("    1  dotnet         92%   3.1G   rebuilding. always rebuilding.");
+        print("    2  chrome         76%   8.4G   214 tabs, all essential");
+        print("    3  side-project    4%   120M   started strong");
+        print("    4  sleep           0%     0B   not scheduled");
+        print("    5  disc-golf      18%    64M   runs weekends only");
+        print();
+      }
+    },
+    git: {
+      hidden: true, desc: "",
+      run: function (args) {
+        const sub = (args[0] || "status").toLowerCase();
+        if (sub === "blame") return print("git blame says it was me. it is always me.", "warn");
+        if (sub === "push") return print("everything up-to-date. suspiciously up-to-date.", "warn");
+        if (sub === "log") return print("one commit: \"fix stuff\". we do not talk about it.", "warn");
+        print("nothing to commit, working tree suspiciously clean.", "warn");
+      }
+    },
+    npm: {
+      hidden: true, desc: "",
+      run: function () {
+        print("installing 1,482 packages for a static site...", "dim");
+        setTimeout(function () { print("kidding. this page has zero dependencies.", "bright"); }, 600);
+      }
+    },
+    cowsay: {
+      hidden: true, desc: "",
+      run: function (args) {
+        const msg = args.length ? args.join(" ") : "ship it";
+        print(" " + "_".repeat(msg.length + 2));
+        print("< " + msg + " >");
+        print(" " + "-".repeat(msg.length + 2));
+        print("        \\   ^__^");
+        print("         \\  (oo)\\_______");
+        print("            (__)\\       )\\/\\");
+        print("                ||----w |");
+        print("                ||     ||");
+      }
+    },
+    hack: {
+      hidden: true, desc: "",
+      run: function () {
+        print("bypassing mainframe...", "dim");
+        print("ACCESS GRANTED", "bright");
+        print("you now have full control of a static HTML page. use it wisely.", "dim");
+        // A burst, not a new resting state: storm is hard to read through.
+        if (window.rain) {
+          const before = window.rain.level;
+          window.rain.set(2);
+          setTimeout(function () { window.rain.set(before); }, 6000);
+        }
+      }
+    },
+    "42": {
+      hidden: true, desc: "",
+      run: function () { print("42. the question is still compiling.", "warn"); }
+    },
+    vim: {
+      hidden: true, silent: true, desc: "",
+      run: function () { print("you are already in a terminal you cannot exit. see `exit`.", "err"); }
+    },
+    ":q": {
+      hidden: true, silent: true, desc: "",
+      run: function () { print("this is a browser. the tab close button is over there.", "err"); }
+    },
+    pwd: { hidden: true, silent: true, desc: "", run: function () { print("/home/ryan"); } },
+    cd: { hidden: true, silent: true, desc: "", run: function () { print("there is nowhere else to go.", "dim"); } },
+    man: { hidden: true, silent: true, desc: "", run: function () { print("no manual entry. try `help`.", "dim"); } },
+    ping: { hidden: true, silent: true, desc: "", run: function () { print("pong. 0.0ms. it is all running in your browser."); } },
+    hello: { hidden: true, silent: true, desc: "", run: function () { print("hi."); } },
     tea: {
       hidden: true, desc: "",
       run: function () { print("steeping... HTTP 418: this machine IS a teapot.", "warn"); }
@@ -572,6 +717,16 @@
 
   input.addEventListener("keydown", function (e) {
     if (busy) { e.preventDefault(); return; }
+
+    if (watchKonami(e.key)) {
+      e.preventDefault();
+      input.value = "";
+      print("↑ ↑ ↓ ↓ ← → ← → B A", "bright");
+      print("30 lives granted. you still only get the one tab.", "dim");
+      secretFound();
+      render();
+      return;
+    }
 
     if (e.key === "Enter") {
       e.preventDefault();
