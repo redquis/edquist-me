@@ -149,6 +149,33 @@
       'fill="currentColor" role="img" aria-label="Ryan Edquist">' + rects + "</svg>";
   }
 
+  const ROLES = ["software engineer", "board game designer", "aspiring pro disc golfer", "gamer"];
+
+  /* Packed to fit rather than left to the browser, which broke the list after a
+     separator and dropped the indent on the continuation line. */
+  let taglineEl = null;
+  function fitTagline() {
+    if (!taglineEl) return;
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
+    probe.textContent = "0".repeat(50);
+    out.appendChild(probe);
+    const charWidth = probe.getBoundingClientRect().width / 50;
+    probe.remove();
+    if (!charWidth) return;
+
+    const cols = Math.max(18, Math.floor(screen.clientWidth / charWidth) - 3);
+    const lines = [];
+    let line = "";
+    ROLES.forEach(function (role) {
+      const merged = line ? line + " · " + role : role;
+      if (!line || merged.length <= cols) line = merged;
+      else { lines.push(line); line = role; }
+    });
+    if (line) lines.push(line);
+    taglineEl.textContent = lines.map(function (l) { return "  " + l; }).join("\n");
+  }
+
   let bannerEl = null;
   let bannerStacked = null;
   function fitBanner() {
@@ -801,6 +828,7 @@
   function relayout() {
     fitViewport();
     fitBanner();
+    fitTagline();
   }
   window.addEventListener("resize", relayout, { passive: true });
   if (window.visualViewport) {
@@ -820,6 +848,7 @@
     busy = true;
     bannerEl = null;
     bannerStacked = null;
+    taglineEl = null;
     START = Date.now();
     boot();
   }
@@ -853,10 +882,11 @@
     bannerEl = print("", "banner");
     fitBanner();
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { fitViewport(); fitBanner(); });
+      document.fonts.ready.then(function () { fitViewport(); fitBanner(); fitTagline(); });
     }
     print();
-    print("  software engineer · board game designer · aspiring pro disc golfer · gamer", "dim");
+    taglineEl = print("", "dim");
+    fitTagline();
     await wait(400);
     print();
     printHTML('type <span class="k">help</span> to get started, or ' +
