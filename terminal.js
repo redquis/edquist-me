@@ -300,7 +300,7 @@
     playJingle();
   }
 
-  const START = Date.now();
+  let START = Date.now();
   function uptime() {
     const s = Math.floor((Date.now() - START) / 1000);
     if (s < 60) return s + " seconds on this page";
@@ -493,6 +493,14 @@
       }
     },
     clear: { desc: "wipe the screen", run: function () { out.innerHTML = ""; } },
+    reboot: {
+      desc: "restart the terminal",
+      run: function () {
+        print("shutting down...", "warn");
+        // Let the line render before the screen is wiped out from under it.
+        setTimeout(reboot, 500);
+      }
+    },
     sudo: {
       desc: "nice try",
       run: function (args) {
@@ -791,6 +799,20 @@
   }
 
   /* ---------- boot ---------- */
+
+  /* Everything boot() touches has to be reset here, or a reboot comes back with
+     an empty banner (fitBanner short-circuits on an unchanged layout) and an
+     uptime counted from the original page load. */
+  function reboot() {
+    out.innerHTML = "";
+    input.value = "";
+    inputline.hidden = true;
+    busy = true;
+    bannerEl = null;
+    bannerStacked = null;
+    START = Date.now();
+    boot();
+  }
 
   async function boot() {
     try {
