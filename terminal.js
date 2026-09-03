@@ -398,7 +398,7 @@
       }
     },
     cat: {
-      desc: "read a file - cat about.txt",
+      desc: "read a file. try: cat about.txt",
       run: function (args) {
         if (!args[0]) return print("usage: cat <file>   (try `ls`)", "err");
         cat(args[0]);
@@ -416,7 +416,7 @@
           "top 5 is a bit much, even for me. type `games` and judge for yourself.");
       }
     },
-    roll: { desc: "roll dice - roll 2d20", run: function (args) { rollDice(args[0]); } },
+    roll: { desc: "roll dice, 1d6 by default. try: roll 2d20", run: function (args) { rollDice(args[0]); } },
     matrix: {
       desc: "cycle the rain: ambient / storm / off",
       run: function () {
@@ -426,7 +426,7 @@
       }
     },
     theme: {
-      desc: "phosphor color - theme amber | green",
+      desc: "phosphor color. try: theme amber",
       run: function (args) {
         const want = (args[0] || "").toLowerCase();
         if (want === "amber" || want === "green") {
