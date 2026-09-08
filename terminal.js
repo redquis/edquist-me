@@ -358,26 +358,18 @@
      Invariant: every melody opens with the three notes its buttons play, so the
      reply continues the phrase you just played instead of starting elsewhere. */
   const MELODIES = {
-    // b d a  g a b d a  b d a  g d c b a
-    lullaby: [["B4", .35], ["D5", .35], ["A4", .75],
-      ["G4", .3], ["A4", .3], ["B4", .3], ["D5", .3], ["A4", .75],
-      ["B4", .35], ["D5", .35], ["A4", .75],
-      ["G4", .3], ["D5", .3], ["C5", .3], ["B4", .3], ["A4", 1.1]],
-    // a d f  a d f  a c b g f g a d  c e d
-    time: [["A4", .34], ["D4", .34], ["F4", .62], ["A4", .34], ["D4", .34], ["F4", .62],
-      ["A4", .34], ["C5", .34], ["B4", .34], ["G4", .34], ["F4", .34], ["G4", .34],
-      ["A4", .34], ["D5", .62], ["C5", .34], ["E5", .34], ["D5", 1.1]],
+    /* 12 hole ocarina tab, transposed: its E G D is our B D A.
+       b d a  g a b d a  b d a  g d a g d  c b a */
+    lullaby: [["B4", .3], ["D5", .3], ["A4", .7],
+      ["G4", .28], ["A4", .28], ["B4", .28], ["D5", .28], ["A4", .7],
+      ["B4", .3], ["D5", .3], ["A4", .7],
+      ["G4", .28], ["D5", .28], ["A4", .28], ["G4", .28], ["D5", .6],
+      ["C5", .3], ["B4", .3], ["A4", 1.1]],
     // f a b  f a b  f a b e d  b c b g e  d e g e
     saria: [["F4", .28], ["A4", .28], ["B4", .56], ["F4", .28], ["A4", .28], ["B4", .56],
       ["F4", .28], ["A4", .28], ["B4", .28], ["E5", .28], ["D5", .56],
       ["B4", .28], ["C5", .28], ["B4", .28], ["G4", .28], ["E4", .56],
       ["D4", .28], ["E4", .28], ["G4", .28], ["E4", .9]],
-    // d f d  d f d  e f e f e c a  a d f g a  a d f g e  d
-    storms: [["D4", .24], ["F4", .24], ["D5", .58], ["D4", .24], ["F4", .24], ["D5", .58],
-      ["E5", .2], ["F5", .2], ["E5", .2], ["F5", .2], ["E5", .2], ["C5", .2], ["A4", .6],
-      ["A4", .22], ["D5", .22], ["F5", .22], ["G5", .22], ["A5", .55],
-      ["A5", .22], ["D5", .22], ["F5", .22], ["G5", .22], ["E5", .55],
-      ["D5", 1.1]]
   };
 
   const SONGS = {
@@ -387,12 +379,13 @@
     sun: ["Sun's Song", ["C→", "C↓", "C↑", "C→", "C↓", "C↑"]],
     time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
     storms: ["Song of Storms", ["A", "C↓", "C↑", "A", "C↓", "C↑"]],
-    minuet: ["Minuet of Forest", ["A", "C↑", "C←", "C→", "C←", "C→"]],
-    bolero: ["Bolero of Fire", ["C↓", "A", "C↓", "A", "C→", "C↓", "C→", "C↓"]],
-    serenade: ["Serenade of Water", ["A", "C↓", "C→", "C→", "C←"]],
-    requiem: ["Requiem of Spirit", ["A", "C↓", "A", "C→", "C↓", "A"]],
-    nocturne: ["Nocturne of Shadow", ["C←", "C→", "C→", "A", "C←", "C→", "C↓"]],
-    prelude: ["Prelude of Light", ["C↑", "C→", "C↑", "C→", "C←", "C↑"]]
+    // Third entry marks a warp song and names where it sends you.
+    minuet: ["Minuet of Forest", ["A", "C↑", "C←", "C→", "C←", "C→"], "Sacred Forest Meadow"],
+    bolero: ["Bolero of Fire", ["C↓", "A", "C↓", "A", "C→", "C↓", "C→", "C↓"], "Death Mountain Crater"],
+    serenade: ["Serenade of Water", ["A", "C↓", "C→", "C→", "C←"], "Lake Hylia"],
+    requiem: ["Requiem of Spirit", ["A", "C↓", "A", "C→", "C↓", "A"], "Desert Colossus"],
+    nocturne: ["Nocturne of Shadow", ["C←", "C→", "C→", "A", "C←", "C→", "C↓"], "Kakariko Graveyard"],
+    prelude: ["Prelude of Light", ["C↑", "C→", "C↑", "C→", "C←", "C↑"], "Temple of Time"]
   };
 
   const PAUSE_BEFORE_MELODY = 1.1;
@@ -406,9 +399,13 @@
     // Triangle with a slow attack reads as a wind instrument, not a game bleep.
     playNotes(notes, "triangle", 0.2, 0.06);
 
-    /* Songs with a transcribed melody get the tune. The rest, chiefly the warp
-       songs whose theme simply is their button phrase, get that phrase played
-       back twice at a slower tempo, which keeps the opening-motif invariant by
+    const prompt = notes.reduce(function (sum, n) { return sum + n[1]; }, 0);
+
+    // A warp song gets no musical answer in the game: you play it and you go.
+    if (SONGS[key][2]) return prompt;
+
+    /* Songs with a transcribed melody get the tune. The rest play their own
+       phrase back at a slower tempo, which keeps the opening-motif invariant by
        construction rather than by my ear. */
     const melody = MELODIES[key]
       ? MELODIES[key].map(function (n) { return [NOTE[n[0]], n[1]]; })
@@ -416,7 +413,6 @@
         return [OCARINA[b], i === all.length - 1 ? 1.1 : 0.42];
       });
 
-    const prompt = notes.reduce(function (sum, n) { return sum + n[1]; }, 0);
     // Scheduled on the audio clock, not a timer, so the gap is exact.
     playNotes(melody, "triangle", 0.17, 0.05, prompt + PAUSE_BEFORE_MELODY);
     return prompt + PAUSE_BEFORE_MELODY;
@@ -710,9 +706,13 @@
         }).join("") + '<span class="sr-only">' + esc(song[1].join(" ")) + "</span>", "notes");
         print();
         const startsAt = playSong(key);
-        if (muted) return print("(muted, type `mute` to hear it)", "dim");
-        // Cue the reply so the pause reads as deliberate rather than broken.
-        setTimeout(function () { print("  ♪ ...", "dim"); }, startsAt * 1000);
+        const warpTo = song[2];
+        if (muted && !warpTo) return print("(muted, type `mute` to hear it)", "dim");
+        setTimeout(function () {
+          if (warpTo) return print("  warping to " + warpTo + " ...", "bright");
+          // Cue the reply so the pause reads as deliberate rather than broken.
+          print("  ♪ ...", "dim");
+        }, startsAt * 1000);
       }
     },
     xyzzy: {
