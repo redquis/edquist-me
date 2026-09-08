@@ -415,7 +415,29 @@
 
   const PAUSE_BEFORE_MELODY = 1.1;
 
-  function playSong(key) {
+  /* Temporary. Zelda's Lullaby has been rejected by ear four times and the
+     tabs all agree on the notes, so these let the difference be heard rather
+     than described: `ocarina lullaby 2`. Delete once one is picked. */
+  const VARIANTS = {
+    lullaby: {
+      1: [["B4", .6], ["D5", .3], ["A4", .9],
+        ["G4", .3], ["A4", .3], ["B4", .6], ["D5", .3], ["A4", .9],
+        ["B4", .6], ["D5", .3], ["A4", .9],
+        ["G4", .3], ["D5", .3], ["C5", .3], ["B4", .3], ["A4", 1.5]],
+      2: [["B4", .55], ["D5", .55], ["A4", 1.1],
+        ["G4", .5], ["A4", .5], ["B4", .55], ["D5", .55], ["A4", 1.1],
+        ["B4", .55], ["D5", .55], ["A4", 1.1],
+        ["G4", .5], ["D5", .5], ["C5", .5], ["B4", .5], ["A4", 1.6]],
+      3: [["B4", .6], ["D5", .6], ["A4", 1.2],
+        ["B4", .6], ["D5", .6], ["A4", 1.2],
+        ["B4", .6], ["D5", .6], ["A4", 1.8]],
+      4: [["A4", .6], ["B4", .3], ["D5", .9],
+        ["A4", .6], ["B4", .3], ["D5", .9],
+        ["G4", .3], ["A4", .3], ["B4", .6], ["D5", .3], ["A4", 1.5]]
+    }
+  };
+
+  function playSong(key, variant) {
     stopAudio();
     const buttons = SONGS[key][1];
     const notes = buttons.map(function (b, i) {
@@ -430,8 +452,10 @@
        own phrase once, phrased rather than metronomic: these phrases are already
        a motif played twice, so replaying the whole thing meant hearing the same
        three notes four times over. */
-    const melody = MELODIES[key]
-      ? MELODIES[key].map(function (n) { return [NOTE[n[0]], n[1]]; })
+    const picked = VARIANTS[key] && VARIANTS[key][variant];
+    const source = picked || MELODIES[key];
+    const melody = source
+      ? source.map(function (n) { return [NOTE[n[0]], n[1]]; })
       : buttons.map(function (b, i, all) {
         const last = i === all.length - 1;
         const endOfFirstHalf = all.length % 2 === 0 && i === all.length / 2 - 1;
@@ -730,8 +754,10 @@
           return '<span class="btn ' + face[0] + '" aria-hidden="true">' + inner + "</span>";
         }).join("") + '<span class="sr-only">' + esc(song[1].join(" ")) + "</span>", "notes");
         print();
-        const startsAt = playSong(key);
+        const variant = args[1];
+        const startsAt = playSong(key, variant);
         if (muted) print("(muted, type `mute` to hear it)", "dim");
+        if (VARIANTS[key] && VARIANTS[key][variant]) print("  take " + variant, "dim");
         // Lands with the reply, so the pause reads as deliberate rather than broken.
         setTimeout(function () { print("  " + song[2], "bright"); }, startsAt * 1000);
       }
