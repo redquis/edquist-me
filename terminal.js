@@ -353,7 +353,10 @@
   };
 
   /* Roughly five seconds of each tune, played back after the prompt the way the
-     game answers you. Transcribed by ear, so close rather than exact. */
+     game answers you. Transcribed by ear, so close rather than exact.
+
+     Invariant: every melody opens with the three notes its buttons play, so the
+     reply continues the phrase you just played instead of starting elsewhere. */
   const MELODIES = {
     lullaby: [["B4", .5], ["D5", .5], ["A4", 1.1], ["B4", .5], ["D5", .5], ["A4", 1.1],
       ["B4", .5], ["D5", .5], ["A4", .5], ["E5", .5], ["D5", 1.2]],
@@ -366,9 +369,9 @@
       ["A4", .3], ["F4", .9]],
     sun: [["A4", .5], ["D5", .5], ["B4", 1.1], ["A4", .5], ["D5", .5], ["B4", 1.1],
       ["A4", .5], ["D5", .5], ["B4", .5], ["D5", .5], ["A5", 1.2]],
-    storms: [["D5", .22], ["A4", .22], ["F4", .44], ["D5", .22], ["A4", .22], ["F4", .44],
+    storms: [["D4", .24], ["F4", .24], ["D5", .58], ["D4", .24], ["F4", .24], ["D5", .58],
       ["E5", .22], ["F4", .22], ["E5", .22], ["F4", .22], ["E5", .22], ["C5", .22],
-      ["A4", .66], ["A4", .22], ["D4", .22], ["F4", .22], ["G4", .22], ["A4", .9]]
+      ["A4", .66], ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["A4", .9]]
   };
 
   const SONGS = {
