@@ -404,13 +404,16 @@
     // A warp song gets no musical answer in the game: you play it and you go.
     if (SONGS[key][2]) return prompt;
 
-    /* Songs with a transcribed melody get the tune. The rest play their own
-       phrase back at a slower tempo, which keeps the opening-motif invariant by
-       construction rather than by my ear. */
+    /* Songs with an ocarina transcription get the tune. The rest restate their
+       own phrase once, phrased rather than metronomic: these phrases are already
+       a motif played twice, so replaying the whole thing meant hearing the same
+       three notes four times over. */
     const melody = MELODIES[key]
       ? MELODIES[key].map(function (n) { return [NOTE[n[0]], n[1]]; })
-      : buttons.concat(buttons).map(function (b, i, all) {
-        return [OCARINA[b], i === all.length - 1 ? 1.1 : 0.42];
+      : buttons.map(function (b, i, all) {
+        const last = i === all.length - 1;
+        const endOfFirstHalf = all.length % 2 === 0 && i === all.length / 2 - 1;
+        return [OCARINA[b], last ? 1.2 : endOfFirstHalf ? 0.8 : 0.34];
       });
 
     // Scheduled on the audio clock, not a timer, so the gap is exact.
