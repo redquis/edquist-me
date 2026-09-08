@@ -102,6 +102,24 @@
     "lands in the one patch of poison ivy on the course."
   ];
 
+  /* Lid raised clear of the body, so it reads as already open. Kept shallow and
+     wide: a taller arc reads as a roof rather than a chest lid. */
+  const CHEST = [
+    "....################....",
+    "..####################..",
+    "########################",
+    "########################",
+    "........................",
+    "########################",
+    "##....................##",
+    "##.......######.......##",
+    "##.......#....#.......##",
+    "##.......######.......##",
+    "##....................##",
+    "##....................##",
+    "########################"
+  ].map(function (row) { return row.replace(/#/g, "█").replace(/\./g, " "); });
+
   const RYAN = [
     "██████  ██    ██  █████  ███    ██ ",
     "██   ██  ██  ██  ██   ██ ████   ██ ",
@@ -132,7 +150,7 @@
      through every letter, and two words of different column counts render at
      different sizes. One rect per filled cell sidesteps both, and stays crisp at
      any width or pixel ratio. */
-  function bannerSvg(lines) {
+  function bannerSvg(lines, label) {
     const cols = Math.max.apply(null, lines.map(function (l) { return l.length; }));
     let rects = "";
     for (let y = 0; y < lines.length; y++) {
@@ -146,7 +164,7 @@
     }
     return '<svg viewBox="0 0 ' + cols + " " + lines.length + '" width="100%" ' +
       'preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" ' +
-      'fill="currentColor" role="img" aria-label="Ryan Edquist">' + rects + "</svg>";
+      'fill="currentColor" role="img" aria-label="' + esc(label || "") + '">' + rects + "</svg>";
   }
 
   const ROLES = ["software engineer", "board game designer", "aspiring pro disc golfer", "gamer"];
@@ -184,7 +202,7 @@
     const stacked = screen.clientWidth < 620;
     if (stacked === bannerStacked) return;
     bannerStacked = stacked;
-    bannerEl.innerHTML = bannerSvg(stacked ? BANNER_STACKED : BANNER_ONE_LINE);
+    bannerEl.innerHTML = bannerSvg(stacked ? BANNER_STACKED : BANNER_ONE_LINE, "Ryan Edquist");
   }
 
   /* 100dvh does not shrink when a mobile keyboard opens, so track the visual
@@ -312,6 +330,10 @@
   /* The five ocarina buttons and the pitches they map to, so the printed button
      sequence and the audio cannot drift apart. */
   const OCARINA = { "A": 293.66, "C↓": 349.23, "C→": 440.00, "C←": 493.88, "C↑": 587.33 };
+  // Solid triangles read far better than thin arrow glyphs at button size.
+  const BUTTON_FACE = {
+    "A": ["a", "A"], "C↓": ["c", "▼"], "C↑": ["c", "▲"], "C←": ["c", "◀"], "C→": ["c", "▶"]
+  };
   const SONGS = {
     lullaby: ["Zelda's Lullaby", ["C←", "C↑", "C→", "C←", "C↑", "C→"]],
     time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
@@ -578,13 +600,9 @@
       hidden: true, silent: true, desc: "",
       run: function () {
         print("you open the chest...", "dim");
-        [
-          "    ╔══════════╗",
-          "    ║ ▓▓▓▓▓▓▓▓ ║",
-          "    ╠═════◆════╣",
-          "    ║          ║",
-          "    ╚══════════╝"
-        ].forEach(function (l) { print(l, "warn"); });
+        // Drawn, not typed: box characters cannot join across a 1.65 line height,
+        // so the verticals rendered as a column of disconnected dashes.
+        print("", "chest").innerHTML = bannerSvg(CHEST, "an open treasure chest");
         setTimeout(function () {
           print("it contains: one (1) personal website.", "bright");
           secretFound();
@@ -614,7 +632,10 @@
         const song = SONGS[key];
         print();
         print("  " + song[0], "bright");
-        print("  " + song[1].map(function (b) { return b.length === 1 ? b + " " : b; }).join(" "), "warn");
+        printHTML(song[1].map(function (b) {
+          const face = BUTTON_FACE[b];
+          return '<span class="btn ' + face[0] + '" aria-hidden="true">' + face[1] + "</span>";
+        }).join("") + '<span class="sr-only">' + esc(song[1].join(" ")) + "</span>", "notes");
         print();
         playSong(song[1]);
         if (muted) print("(muted, type `mute` to hear it)", "dim");
