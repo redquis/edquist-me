@@ -350,7 +350,8 @@
   const NOTE = {
     C4: 261.63,
     D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
-    C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 784.00, A5: 880.00
+    C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 784.00, A5: 880.00,
+    D6: 1174.66
   };
 
   /* Roughly five seconds of each tune, played back after the prompt the way the
@@ -396,9 +397,12 @@
       ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["A4", .5],
       ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["E4", .4], ["D4", 1.1]],
 
-    // By ear. a f d  a f d  a f d, the last one held.
-    sun: [["A4", .4], ["F4", .4], ["D5", .85], ["A4", .4], ["F4", .4], ["D5", .85],
-      ["A4", .4], ["F4", .4], ["D5", 1.3]]
+    /* From the text tab: a f d twice, then a slide up the B string from fret 10
+       to 20. Two statements and a rising flourish, not the three statements I
+       had guessed. */
+    sun: [["A4", .42], ["F4", .42], ["D5", .8],
+      ["A4", .42], ["F4", .42], ["D5", .8],
+      ["A5", .45], ["D6", 1.3]]
   };
 
   // name, button phrase, and what the song does when it lands.
