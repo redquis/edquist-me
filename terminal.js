@@ -358,8 +358,11 @@
      Invariant: every melody opens with the three notes its buttons play, so the
      reply continues the phrase you just played instead of starting elsewhere. */
   const MELODIES = {
-    lullaby: [["B4", .5], ["D5", .5], ["A4", 1.1], ["B4", .5], ["D5", .5], ["A4", 1.1],
-      ["B4", .5], ["D5", .5], ["A4", .5], ["E5", .5], ["D5", 1.2]],
+    // b d a  g a b d a  b d a  g d c b a
+    lullaby: [["B4", .35], ["D5", .35], ["A4", .75],
+      ["G4", .3], ["A4", .3], ["B4", .3], ["D5", .3], ["A4", .75],
+      ["B4", .35], ["D5", .35], ["A4", .75],
+      ["G4", .3], ["D5", .3], ["C5", .3], ["B4", .3], ["A4", 1.1]],
     // a d f  a d f  a c b g f g a d  c e d
     time: [["A4", .34], ["D4", .34], ["F4", .62], ["A4", .34], ["D4", .34], ["F4", .62],
       ["A4", .34], ["C5", .34], ["B4", .34], ["G4", .34], ["F4", .34], ["G4", .34],
@@ -371,8 +374,6 @@
       ["F4", .28], ["A4", .28], ["B4", .28], ["E5", .28], ["D5", .56],
       ["B4", .28], ["C5", .28], ["B4", .28], ["G4", .28], ["E4", .56],
       ["D4", .28], ["E4", .28], ["G4", .28], ["E4", .9]],
-    sun: [["A4", .5], ["D5", .5], ["B4", 1.1], ["A4", .5], ["D5", .5], ["B4", 1.1],
-      ["A4", .5], ["D5", .5], ["B4", .5], ["D5", .5], ["A5", 1.2]],
     storms: [["D4", .24], ["F4", .24], ["D5", .58], ["D4", .24], ["F4", .24], ["D5", .58],
       ["E5", .22], ["F4", .22], ["E5", .22], ["F4", .22], ["E5", .22], ["C5", .22],
       ["A4", .66], ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["A4", .44],
@@ -381,11 +382,17 @@
 
   const SONGS = {
     lullaby: ["Zelda's Lullaby", ["C←", "C↑", "C→", "C←", "C↑", "C→"]],
-    time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
     epona: ["Epona's Song", ["C↑", "C←", "C→", "C↑", "C←", "C→"]],
     saria: ["Saria's Song", ["C↓", "C→", "C←", "C↓", "C→", "C←"]],
-    sun: ["Sun's Song", ["C→", "C↑", "C←", "C→", "C↑", "C←"]],
-    storms: ["Song of Storms", ["A", "C↓", "C↑", "A", "C↓", "C↑"]]
+    sun: ["Sun's Song", ["C→", "C↓", "C↑", "C→", "C↓", "C↑"]],
+    time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
+    storms: ["Song of Storms", ["A", "C↓", "C↑", "A", "C↓", "C↑"]],
+    minuet: ["Minuet of Forest", ["A", "C↑", "C←", "C→", "C←", "C→"]],
+    bolero: ["Bolero of Fire", ["C↓", "A", "C↓", "A", "C→", "C↓", "C→", "C↓"]],
+    serenade: ["Serenade of Water", ["A", "C↓", "C→", "C→", "C←"]],
+    requiem: ["Requiem of Spirit", ["A", "C↓", "A", "C→", "C↓", "A"]],
+    nocturne: ["Nocturne of Shadow", ["C←", "C→", "C→", "A", "C←", "C→", "C↓"]],
+    prelude: ["Prelude of Light", ["C↑", "C→", "C↑", "C→", "C←", "C↑"]]
   };
 
   const PAUSE_BEFORE_MELODY = 1.1;
@@ -399,12 +406,19 @@
     // Triangle with a slow attack reads as a wind instrument, not a game bleep.
     playNotes(notes, "triangle", 0.2, 0.06);
 
-    const melody = MELODIES[key];
-    if (!melody) return 0;
+    /* Songs with a transcribed melody get the tune. The rest, chiefly the warp
+       songs whose theme simply is their button phrase, get that phrase played
+       back twice at a slower tempo, which keeps the opening-motif invariant by
+       construction rather than by my ear. */
+    const melody = MELODIES[key]
+      ? MELODIES[key].map(function (n) { return [NOTE[n[0]], n[1]]; })
+      : buttons.concat(buttons).map(function (b, i, all) {
+        return [OCARINA[b], i === all.length - 1 ? 1.1 : 0.42];
+      });
+
     const prompt = notes.reduce(function (sum, n) { return sum + n[1]; }, 0);
     // Scheduled on the audio clock, not a timer, so the gap is exact.
-    playNotes(melody.map(function (n) { return [NOTE[n[0]], n[1]]; }),
-      "triangle", 0.17, 0.05, prompt + PAUSE_BEFORE_MELODY);
+    playNotes(melody, "triangle", 0.17, 0.05, prompt + PAUSE_BEFORE_MELODY);
     return prompt + PAUSE_BEFORE_MELODY;
   }
 
