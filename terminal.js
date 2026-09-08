@@ -365,34 +365,44 @@
       ["D5", .4], ["B4", .4], ["A4", .85],
       ["D5", .4], ["B4", .4], ["A4", .4], ["B4", .4], ["A4", 1.2]],
 
-    /* 12 hole ocarina tab, transposed: its E G D is our B D A.
-       b d a  g a b d a  b d a  g d a g d  c b a */
-    lullaby: [["B4", .3], ["D5", .3], ["A4", .7],
-      ["G4", .28], ["A4", .28], ["B4", .28], ["D5", .28], ["A4", .7],
-      ["B4", .3], ["D5", .3], ["A4", .7],
-      ["G4", .28], ["D5", .28], ["A4", .28], ["G4", .28], ["D5", .6],
-      ["C5", .3], ["B4", .3], ["A4", 1.1]],
+    /* Written by ear. Two ocarina tabs transpose to a longer line, b d a g a b d
+       a b d a g d c b a, but it does not sound like the tune in practice, and
+       the ear beat the sources on every song here. */
+    lullaby: [["B4", .5], ["D5", .5], ["A4", 1.1],
+      ["B4", .5], ["D5", .5], ["A4", 1.1],
+      ["B4", .5], ["D5", .5], ["A4", .5], ["E5", .5], ["D5", 1.2]],
     // f a b  f a b  f a b e d  b c b g e  d e g e
     saria: [["F4", .28], ["A4", .28], ["B4", .56], ["F4", .28], ["A4", .28], ["B4", .56],
       ["F4", .28], ["A4", .28], ["B4", .28], ["E5", .28], ["D5", .56],
       ["B4", .28], ["C5", .28], ["B4", .28], ["G4", .28], ["E4", .56],
       ["D4", .28], ["E4", .28], ["G4", .28], ["E4", .9]],
+
+    // By ear. a d f  a d f  a c b g f g a d  c e d
+    time: [["A4", .34], ["D4", .34], ["F4", .62], ["A4", .34], ["D4", .34], ["F4", .62],
+      ["A4", .34], ["C5", .34], ["B4", .34], ["G4", .34], ["F4", .34], ["G4", .34],
+      ["A4", .34], ["D5", .62], ["C5", .34], ["E5", .34], ["D5", 1.1]],
+
+    // By ear. d f d  d f d  e f e f e c a  a d f g a  g e d
+    storms: [["D4", .24], ["F4", .24], ["D5", .58], ["D4", .24], ["F4", .24], ["D5", .58],
+      ["E5", .22], ["F4", .22], ["E5", .22], ["F4", .22], ["E5", .22], ["C5", .22],
+      ["A4", .66], ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["A4", .44],
+      ["G4", .24], ["E4", .24], ["D4", 1.2]]
   };
 
+  // name, button phrase, and what the song does when it lands.
   const SONGS = {
-    lullaby: ["Zelda's Lullaby", ["C←", "C↑", "C→", "C←", "C↑", "C→"]],
-    epona: ["Epona's Song", ["C↑", "C←", "C→", "C↑", "C←", "C→"]],
-    saria: ["Saria's Song", ["C↓", "C→", "C←", "C↓", "C→", "C←"]],
-    sun: ["Sun's Song", ["C→", "C↓", "C↑", "C→", "C↓", "C↑"]],
-    time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
-    storms: ["Song of Storms", ["A", "C↓", "C↑", "A", "C↓", "C↑"]],
-    // Third entry marks a warp song and names where it sends you.
-    minuet: ["Minuet of Forest", ["A", "C↑", "C←", "C→", "C←", "C→"], "Sacred Forest Meadow"],
-    bolero: ["Bolero of Fire", ["C↓", "A", "C↓", "A", "C→", "C↓", "C→", "C↓"], "Death Mountain Crater"],
-    serenade: ["Serenade of Water", ["A", "C↓", "C→", "C→", "C←"], "Lake Hylia"],
-    requiem: ["Requiem of Spirit", ["A", "C↓", "A", "C→", "C↓", "A"], "Desert Colossus"],
-    nocturne: ["Nocturne of Shadow", ["C←", "C→", "C→", "A", "C←", "C→", "C↓"], "Kakariko Graveyard"],
-    prelude: ["Prelude of Light", ["C↑", "C→", "C↑", "C→", "C←", "C↑"], "Temple of Time"]
+    lullaby: ["Zelda's Lullaby", ["C←", "C↑", "C→", "C←", "C↑", "C→"], "the royal crest recognizes you."],
+    epona: ["Epona's Song", ["C↑", "C←", "C→", "C↑", "C←", "C→"], "Epona comes running."],
+    saria: ["Saria's Song", ["C↓", "C→", "C←", "C↓", "C→", "C←"], "the Lost Woods answer back."],
+    sun: ["Sun's Song", ["C→", "C↓", "C↑", "C→", "C↓", "C↑"], "night turns to day."],
+    time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"], "the Door of Time opens."],
+    storms: ["Song of Storms", ["A", "C↓", "C↑", "A", "C↓", "C↑"], "the sky opens. rain, everywhere."],
+    minuet: ["Minuet of Forest", ["A", "C↑", "C←", "C→", "C←", "C→"], "warping to the Sacred Forest Meadow ..."],
+    bolero: ["Bolero of Fire", ["C↓", "A", "C↓", "A", "C→", "C↓", "C→", "C↓"], "warping to Death Mountain Crater ..."],
+    serenade: ["Serenade of Water", ["A", "C↓", "C→", "C→", "C←"], "warping to Lake Hylia ..."],
+    requiem: ["Requiem of Spirit", ["A", "C↓", "A", "C→", "C↓", "A"], "warping to the Desert Colossus ..."],
+    nocturne: ["Nocturne of Shadow", ["C←", "C→", "C→", "A", "C←", "C→", "C↓"], "warping to Kakariko Graveyard ..."],
+    prelude: ["Prelude of Light", ["C↑", "C→", "C↑", "C→", "C←", "C↑"], "warping to the Temple of Time ..."]
   };
 
   const PAUSE_BEFORE_MELODY = 1.1;
@@ -407,9 +417,6 @@
     playNotes(notes, "triangle", 0.2, 0.06);
 
     const prompt = notes.reduce(function (sum, n) { return sum + n[1]; }, 0);
-
-    // A warp song gets no musical answer in the game: you play it and you go.
-    if (SONGS[key][2]) return prompt;
 
     /* Songs with an ocarina transcription get the tune. The rest restate their
        own phrase once, phrased rather than metronomic: these phrases are already
@@ -716,13 +723,9 @@
         }).join("") + '<span class="sr-only">' + esc(song[1].join(" ")) + "</span>", "notes");
         print();
         const startsAt = playSong(key);
-        const warpTo = song[2];
-        if (muted && !warpTo) return print("(muted, type `mute` to hear it)", "dim");
-        setTimeout(function () {
-          if (warpTo) return print("  warping to " + warpTo + " ...", "bright");
-          // Cue the reply so the pause reads as deliberate rather than broken.
-          print("  ♪ ...", "dim");
-        }, startsAt * 1000);
+        if (muted) print("(muted, type `mute` to hear it)", "dim");
+        // Lands with the reply, so the pause reads as deliberate rather than broken.
+        setTimeout(function () { print("  " + song[2], "bright"); }, startsAt * 1000);
       }
     },
     xyzzy: {
