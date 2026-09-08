@@ -330,10 +330,15 @@
   /* The five ocarina buttons and the pitches they map to, so the printed button
      sequence and the audio cannot drift apart. */
   const OCARINA = { "A": 293.66, "C↓": 349.23, "C→": 440.00, "C←": 493.88, "C↑": 587.33 };
-  // Solid triangles read far better than thin arrow glyphs at button size.
+  /* One drawn triangle, rotated per direction. The Unicode arrows are not usable
+     here: JetBrains Mono lacks them, and the fallback renders the left and right
+     glyphs half again as wide as the up and down ones. */
   const BUTTON_FACE = {
-    "A": ["a", "A"], "C↓": ["c", "▼"], "C↑": ["c", "▲"], "C←": ["c", "◀"], "C→": ["c", "▶"]
+    "A": ["a", null], "C↓": ["c", "down"], "C↑": ["c", "up"],
+    "C←": ["c", "left"], "C→": ["c", "right"]
   };
+  const TRIANGLE = '<svg class="tri" viewBox="0 0 10 10" aria-hidden="true">' +
+    '<polygon points="5,1.4 9.3,8.6 0.7,8.6"/></svg>';
   const SONGS = {
     lullaby: ["Zelda's Lullaby", ["C←", "C↑", "C→", "C←", "C↑", "C→"]],
     time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
@@ -634,7 +639,8 @@
         print("  " + song[0], "bright");
         printHTML(song[1].map(function (b) {
           const face = BUTTON_FACE[b];
-          return '<span class="btn ' + face[0] + '" aria-hidden="true">' + face[1] + "</span>";
+          const inner = face[1] ? TRIANGLE.replace('class="tri"', 'class="tri ' + face[1] + '"') : "A";
+          return '<span class="btn ' + face[0] + '" aria-hidden="true">' + inner + "</span>";
         }).join("") + '<span class="sr-only">' + esc(song[1].join(" ")) + "</span>", "notes");
         print();
         playSong(song[1]);

@@ -115,6 +115,11 @@ body {
 }
 .btn.a { color: #9fd8ff; border-color: #4a9fd4; background: rgba(74, 159, 212, .14); }
 .btn.c { color: #ffd75e; border-color: #c99a12; background: rgba(255, 213, 74, .14); }
+
+.btn .tri { display: block; width: .78em; height: .78em; fill: currentColor; }
+.btn .tri.down { transform: rotate(180deg); }
+.btn .tri.left { transform: rotate(-90deg); }
+.btn .tri.right { transform: rotate(90deg); }
 html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 176, 0, .4)); }
 /* Hanging indent so a wrapped list comment stays under its entry on mobile. */
 .line.sub { padding-left: 6ch; }
