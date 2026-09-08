@@ -348,6 +348,7 @@
   const TRIANGLE = '<svg class="tri" viewBox="0 0 10 10" aria-hidden="true">' +
     '<polygon points="5,1.4 9.3,8.6 0.7,8.6"/></svg>';
   const NOTE = {
+    C4: 261.63,
     D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
     C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 784.00, A5: 880.00
   };
@@ -380,19 +381,20 @@
       ["B4", .28], ["C5", .28], ["B4", .28], ["G4", .28], ["E4", .56],
       ["D4", .28], ["E4", .28], ["G4", .28], ["E4", .9]],
 
-    // By ear. a d f  a d f  a c b g f g a d  c e d
+    /* From the text tab: a d f  a d f  a c b g f g a d  c e d. The tail is
+       fretted low, D3 C3 E3 D3, so it settles rather than climbing. */
     time: [["A4", .34], ["D4", .34], ["F4", .62], ["A4", .34], ["D4", .34], ["F4", .62],
       ["A4", .34], ["C5", .34], ["B4", .34], ["G4", .34], ["F4", .34], ["G4", .34],
-      ["A4", .34], ["D5", .62], ["C5", .34], ["E5", .34], ["D5", 1.1]],
+      ["A4", .34], ["D4", .62], ["C4", .34], ["E4", .34], ["D4", 1.1]],
 
-    /* By ear. d f d  d f d  e f e f e c a  a d f g a  g e d
-       The e f alternation and the rising run stay in one register: dropping the
-       f and the run down an octave made them leap a tenth on every other note,
-       which is the part that sounded off. */
-    storms: [["D4", .24], ["F4", .24], ["D5", .58], ["D4", .24], ["F4", .24], ["D5", .58],
-      ["E5", .22], ["F5", .22], ["E5", .22], ["F5", .22], ["E5", .22], ["C5", .22],
-      ["A4", .6], ["A4", .24], ["D5", .24], ["F5", .24], ["G5", .24], ["A5", .5],
-      ["G5", .24], ["E5", .24], ["D5", 1.2]],
+    /* From the text tab. The e f alternation is high, fretted 12 and 13 on the
+       top string, but the run after it is low, a d f g on the G and B strings.
+       Raising that run to match the alternation was an over-correction. */
+    storms: [["D4", .24], ["F4", .24], ["D5", .52], ["D4", .24], ["F4", .24], ["D5", .52],
+      ["E5", .24], ["F5", .24], ["E5", .24], ["F5", .24], ["E5", .24],
+      ["C5", .28], ["A4", .5],
+      ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["A4", .5],
+      ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["E4", .4], ["D4", 1.1]],
 
     // By ear. a f d  a f d  a f d, the last one held.
     sun: [["A4", .4], ["F4", .4], ["D5", .85], ["A4", .4], ["F4", .4], ["D5", .85],
