@@ -301,14 +301,21 @@
   let muted = false;
   try { muted = localStorage.getItem("muted") === "1"; } catch (e) { /* private mode */ }
 
-  function playNotes(notes, wave, peak, attack) {
+  // Scheduled oscillators, so a new song can cut off one still playing.
+  let scheduled = [];
+  function stopAudio() {
+    scheduled.forEach(function (osc) { try { osc.stop(); } catch (e) { /* already done */ } });
+    scheduled = [];
+  }
+
+  function playNotes(notes, wave, peak, attack, delay) {
     if (muted) return;
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return;
       audioCtx = audioCtx || new Ctx();
       if (audioCtx.state === "suspended") audioCtx.resume();
-      let t = audioCtx.currentTime + 0.03;
+      let t = audioCtx.currentTime + 0.03 + (delay || 0);
       notes.forEach(function (note) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -320,6 +327,7 @@
         osc.connect(gain).connect(audioCtx.destination);
         osc.start(t);
         osc.stop(t + note[1] + 0.02);
+        scheduled.push(osc);
         t += note[1];
       });
     } catch (e) { /* no audio device, or autoplay policy said no */ }
@@ -339,6 +347,30 @@
   };
   const TRIANGLE = '<svg class="tri" viewBox="0 0 10 10" aria-hidden="true">' +
     '<polygon points="5,1.4 9.3,8.6 0.7,8.6"/></svg>';
+  const NOTE = {
+    D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+    C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 784.00, A5: 880.00
+  };
+
+  /* Roughly five seconds of each tune, played back after the prompt the way the
+     game answers you. Transcribed by ear, so close rather than exact. */
+  const MELODIES = {
+    lullaby: [["B4", .5], ["D5", .5], ["A4", 1.1], ["B4", .5], ["D5", .5], ["A4", 1.1],
+      ["B4", .5], ["D5", .5], ["A4", .5], ["E5", .5], ["D5", 1.2]],
+    time: [["A4", .45], ["D4", .45], ["F4", .9], ["A4", .45], ["D4", .45], ["F4", .9],
+      ["A4", .45], ["C5", .45], ["B4", .45], ["A4", .45], ["G4", 1.1]],
+    epona: [["D5", .45], ["B4", .45], ["A4", .9], ["D5", .45], ["B4", .45], ["A4", .9],
+      ["D5", .45], ["B4", .45], ["A4", .45], ["B4", .45], ["A4", 1.1]],
+    saria: [["F4", .3], ["A4", .3], ["B4", .6], ["F4", .3], ["A4", .3], ["B4", .6],
+      ["F4", .3], ["A4", .3], ["B4", .3], ["E5", .3], ["D5", .3], ["B4", .3],
+      ["A4", .3], ["F4", .9]],
+    sun: [["A4", .5], ["D5", .5], ["B4", 1.1], ["A4", .5], ["D5", .5], ["B4", 1.1],
+      ["A4", .5], ["D5", .5], ["B4", .5], ["D5", .5], ["A5", 1.2]],
+    storms: [["D5", .22], ["A4", .22], ["F4", .44], ["D5", .22], ["A4", .22], ["F4", .44],
+      ["E5", .22], ["F4", .22], ["E5", .22], ["F4", .22], ["E5", .22], ["C5", .22],
+      ["A4", .66], ["A4", .22], ["D4", .22], ["F4", .22], ["G4", .22], ["A4", .9]]
+  };
+
   const SONGS = {
     lullaby: ["Zelda's Lullaby", ["C←", "C↑", "C→", "C←", "C↑", "C→"]],
     time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
@@ -348,12 +380,24 @@
     storms: ["Song of Storms", ["A", "C↓", "C↑", "A", "C↓", "C↑"]]
   };
 
-  function playSong(buttons) {
+  const PAUSE_BEFORE_MELODY = 1.1;
+
+  function playSong(key) {
+    stopAudio();
+    const buttons = SONGS[key][1];
     const notes = buttons.map(function (b, i) {
       return [OCARINA[b], i === buttons.length - 1 ? 0.75 : 0.36];
     });
     // Triangle with a slow attack reads as a wind instrument, not a game bleep.
     playNotes(notes, "triangle", 0.2, 0.06);
+
+    const melody = MELODIES[key];
+    if (!melody) return 0;
+    const prompt = notes.reduce(function (sum, n) { return sum + n[1]; }, 0);
+    // Scheduled on the audio clock, not a timer, so the gap is exact.
+    playNotes(melody.map(function (n) { return [NOTE[n[0]], n[1]]; }),
+      "triangle", 0.17, 0.05, prompt + PAUSE_BEFORE_MELODY);
+    return prompt + PAUSE_BEFORE_MELODY;
   }
 
   const OOT_RELEASE = new Date(2026, 10, 5);
@@ -643,8 +687,10 @@
           return '<span class="btn ' + face[0] + '" aria-hidden="true">' + inner + "</span>";
         }).join("") + '<span class="sr-only">' + esc(song[1].join(" ")) + "</span>", "notes");
         print();
-        playSong(song[1]);
-        if (muted) print("(muted, type `mute` to hear it)", "dim");
+        const startsAt = playSong(key);
+        if (muted) return print("(muted, type `mute` to hear it)", "dim");
+        // Cue the reply so the pause reads as deliberate rather than broken.
+        setTimeout(function () { print("  ♪ ...", "dim"); }, startsAt * 1000);
       }
     },
     xyzzy: {
