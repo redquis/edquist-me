@@ -283,7 +283,7 @@
   let muted = false;
   try { muted = localStorage.getItem("muted") === "1"; } catch (e) { /* private mode */ }
 
-  function playJingle() {
+  function playNotes(notes, wave, peak, attack) {
     if (muted) return;
     try {
       const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -291,13 +291,13 @@
       audioCtx = audioCtx || new Ctx();
       if (audioCtx.state === "suspended") audioCtx.resume();
       let t = audioCtx.currentTime + 0.03;
-      SECRET_JINGLE.forEach(function (note) {
+      notes.forEach(function (note) {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = "square";
+        osc.type = wave || "square";
         osc.frequency.setValueAtTime(note[0], t);
         gain.gain.setValueAtTime(0.0001, t);
-        gain.gain.exponentialRampToValueAtTime(0.16, t + 0.012);
+        gain.gain.exponentialRampToValueAtTime(peak || 0.16, t + (attack || 0.012));
         gain.gain.exponentialRampToValueAtTime(0.0001, t + note[1]);
         osc.connect(gain).connect(audioCtx.destination);
         osc.start(t);
@@ -305,6 +305,37 @@
         t += note[1];
       });
     } catch (e) { /* no audio device, or autoplay policy said no */ }
+  }
+
+  function playJingle() { playNotes(SECRET_JINGLE, "square", 0.16, 0.012); }
+
+  /* The five ocarina buttons and the pitches they map to, so the printed button
+     sequence and the audio cannot drift apart. */
+  const OCARINA = { "A": 293.66, "C↓": 349.23, "C→": 440.00, "C←": 493.88, "C↑": 587.33 };
+  const SONGS = {
+    lullaby: ["Zelda's Lullaby", ["C←", "C↑", "C→", "C←", "C↑", "C→"]],
+    time: ["Song of Time", ["C→", "A", "C↓", "C→", "A", "C↓"]],
+    epona: ["Epona's Song", ["C↑", "C←", "C→", "C↑", "C←", "C→"]],
+    saria: ["Saria's Song", ["C↓", "C→", "C←", "C↓", "C→", "C←"]],
+    sun: ["Sun's Song", ["C→", "C↑", "C←", "C→", "C↑", "C←"]],
+    storms: ["Song of Storms", ["A", "C↓", "C↑", "A", "C↓", "C↑"]]
+  };
+
+  function playSong(buttons) {
+    const notes = buttons.map(function (b, i) {
+      return [OCARINA[b], i === buttons.length - 1 ? 0.75 : 0.36];
+    });
+    // Triangle with a slow attack reads as a wind instrument, not a game bleep.
+    playNotes(notes, "triangle", 0.2, 0.06);
+  }
+
+  const OOT_RELEASE = new Date(2026, 10, 5);
+  function ootCountdown() {
+    const days = Math.ceil((OOT_RELEASE - Date.now()) / 86400000);
+    if (days > 1) return "Ocarina of Time on Switch 2 in " + days + " days. November 5, 2026.";
+    if (days === 1) return "Ocarina of Time on Switch 2 lands tomorrow.";
+    if (days === 0) return "Ocarina of Time on Switch 2 lands today. go play it.";
+    return "Ocarina of Time is out on Switch 2. why are you still in a terminal.";
   }
 
   /* Watched on raw keydown rather than as a command, so it still works while the
@@ -543,10 +574,50 @@
       }
     },
     zelda: {
-      hidden: true, desc: "",
+      // Silent so the fanfare lands on the item, not before the chest opens.
+      hidden: true, silent: true, desc: "",
       run: function () {
-        print("you open the chest.", "bright");
-        print("it contains: one (1) personal website.", "dim");
+        print("you open the chest...", "dim");
+        [
+          "    ╔══════════╗",
+          "    ║ ▓▓▓▓▓▓▓▓ ║",
+          "    ╠═════◆════╣",
+          "    ║          ║",
+          "    ╚══════════╝"
+        ].forEach(function (l) { print(l, "warn"); });
+        setTimeout(function () {
+          print("it contains: one (1) personal website.", "bright");
+          secretFound();
+        }, 700);
+        setTimeout(function () {
+          print();
+          print(ootCountdown(), "bright");
+          print("try `ocarina` while you wait.", "dim");
+        }, 1600);
+      }
+    },
+    ocarina: {
+      hidden: true, silent: true, desc: "",
+      run: function (args) {
+        const key = (args[0] || "").toLowerCase();
+        if (!SONGS[key]) {
+          print();
+          print("ocarina <song>", "bright");
+          print();
+          Object.keys(SONGS).forEach(function (k) {
+            print("  " + k + " ".repeat(10 - k.length) + SONGS[k][0]);
+          });
+          print();
+          if (!key) return print("pick one. try: ocarina storms", "dim");
+          return print("never heard that one. " + (muted ? "" : "your ocarina is fine."), "err");
+        }
+        const song = SONGS[key];
+        print();
+        print("  " + song[0], "bright");
+        print("  " + song[1].map(function (b) { return b.length === 1 ? b + " " : b; }).join(" "), "warn");
+        print();
+        playSong(song[1]);
+        if (muted) print("(muted, type `mute` to hear it)", "dim");
       }
     },
     xyzzy: {
