@@ -358,6 +358,13 @@
      Invariant: every melody opens with the three notes its buttons play, so the
      reply continues the phrase you just played instead of starting elsewhere. */
   const MELODIES = {
+    /* Ocarina melody tab, frets 14 11 9 on the G string, which is our D B A a
+       fourth down: main phrase twice, then the variation that drops the D.
+       d b a  d b a  d b a b a */
+    epona: [["D5", .4], ["B4", .4], ["A4", .85],
+      ["D5", .4], ["B4", .4], ["A4", .85],
+      ["D5", .4], ["B4", .4], ["A4", .4], ["B4", .4], ["A4", 1.2]],
+
     /* 12 hole ocarina tab, transposed: its E G D is our B D A.
        b d a  g a b d a  b d a  g d a g d  c b a */
     lullaby: [["B4", .3], ["D5", .3], ["A4", .7],
