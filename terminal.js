@@ -365,12 +365,13 @@
       ["D5", .4], ["B4", .4], ["A4", .85],
       ["D5", .4], ["B4", .4], ["A4", .4], ["B4", .4], ["A4", 1.2]],
 
-    /* Written by ear. Two ocarina tabs transpose to a longer line, b d a g a b d
-       a b d a g d c b a, but it does not sound like the tune in practice, and
-       the ear beat the sources on every song here. */
-    lullaby: [["B4", .5], ["D5", .5], ["A4", 1.1],
-      ["B4", .5], ["D5", .5], ["A4", 1.1],
-      ["B4", .5], ["D5", .5], ["A4", .5], ["E5", .5], ["D5", 1.2]],
+    /* b d a  g a b d a  b d a  g d c b a, the line the 6 and 12 hole ocarina
+       tabs agree on. It is a slow 3/4: long, short, long. Earlier passes played
+       it in even eighths, which is why the right notes sounded wrong. */
+    lullaby: [["B4", .6], ["D5", .3], ["A4", .9],
+      ["G4", .3], ["A4", .3], ["B4", .6], ["D5", .3], ["A4", .9],
+      ["B4", .6], ["D5", .3], ["A4", .9],
+      ["G4", .3], ["D5", .3], ["C5", .3], ["B4", .3], ["A4", 1.5]],
     // f a b  f a b  f a b e d  b c b g e  d e g e
     saria: [["F4", .28], ["A4", .28], ["B4", .56], ["F4", .28], ["A4", .28], ["B4", .56],
       ["F4", .28], ["A4", .28], ["B4", .28], ["E5", .28], ["D5", .56],
@@ -382,11 +383,18 @@
       ["A4", .34], ["C5", .34], ["B4", .34], ["G4", .34], ["F4", .34], ["G4", .34],
       ["A4", .34], ["D5", .62], ["C5", .34], ["E5", .34], ["D5", 1.1]],
 
-    // By ear. d f d  d f d  e f e f e c a  a d f g a  g e d
+    /* By ear. d f d  d f d  e f e f e c a  a d f g a  g e d
+       The e f alternation and the rising run stay in one register: dropping the
+       f and the run down an octave made them leap a tenth on every other note,
+       which is the part that sounded off. */
     storms: [["D4", .24], ["F4", .24], ["D5", .58], ["D4", .24], ["F4", .24], ["D5", .58],
-      ["E5", .22], ["F4", .22], ["E5", .22], ["F4", .22], ["E5", .22], ["C5", .22],
-      ["A4", .66], ["A4", .24], ["D4", .24], ["F4", .24], ["G4", .24], ["A4", .44],
-      ["G4", .24], ["E4", .24], ["D4", 1.2]]
+      ["E5", .22], ["F5", .22], ["E5", .22], ["F5", .22], ["E5", .22], ["C5", .22],
+      ["A4", .6], ["A4", .24], ["D5", .24], ["F5", .24], ["G5", .24], ["A5", .5],
+      ["G5", .24], ["E5", .24], ["D5", 1.2]],
+
+    // By ear. a f d  a f d  a f d, the last one held.
+    sun: [["A4", .4], ["F4", .4], ["D5", .85], ["A4", .4], ["F4", .4], ["D5", .85],
+      ["A4", .4], ["F4", .4], ["D5", 1.3]]
   };
 
   // name, button phrase, and what the song does when it lands.
