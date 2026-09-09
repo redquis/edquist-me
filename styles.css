@@ -205,3 +205,18 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
 .rprompt { color: var(--accent); white-space: nowrap; margin-right: 8px; }
 .rmatch { color: var(--fg-bright); }
 .rmatch.miss { color: #ff6b5e; }
+
+/* Snake board: fixed grid, must not reflow. */
+.line.snake {
+  white-space: pre;
+  min-height: 0;
+  line-height: 1.15;
+  color: var(--fg-bright);
+  overflow: hidden;
+  touch-action: none;
+  /* Opaque, or the matrix rain shows straight through the play area. */
+  background: rgba(3, 6, 3, .82);
+  display: inline-block;
+  padding: 6px 10px 8px 0;
+  border-radius: 3px;
+}

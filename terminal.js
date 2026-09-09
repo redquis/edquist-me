@@ -764,6 +764,13 @@
         print();
       }
     },
+    snake: {
+      desc: "play snake. arrows or wasd, q quits",
+      run: function () {
+        print("arrows or wasd to steer, q to quit. swipe works too.", "dim");
+        startSnake();
+      }
+    },
     share: {
       desc: "copy a link to what you just ran",
       run: function () {
@@ -1040,6 +1047,131 @@
     }
   };
 
+  /* ---------- snake ---------- */
+
+  const SNAKE_TICK = 110;
+  let snake = null;
+
+  function snakeHighScore(next) {
+    try {
+      if (next === undefined) return parseInt(localStorage.getItem("snakeHigh") || "0", 10);
+      localStorage.setItem("snakeHigh", String(next));
+    } catch (e) { /* private mode */ }
+    return next || 0;
+  }
+
+  function snakeDraw() {
+    const g = snake;
+    const rows = [];
+    for (let y = 0; y < g.rows; y++) {
+      let row = "";
+      for (let x = 0; x < g.cols; x++) {
+        if (g.food.x === x && g.food.y === y) { row += "*"; continue; }
+        const onBody = g.body.some(function (c, i) { return i > 0 && c.x === x && c.y === y; });
+        if (g.body[0].x === x && g.body[0].y === y) row += "@";
+        else if (onBody) row += "o";
+        else row += " ";
+      }
+      rows.push("  |" + row + "|");
+    }
+    const border = "  +" + "-".repeat(g.cols) + "+";
+    const status = "  score " + g.score + "   best " + g.best +
+      " ".repeat(Math.max(1, g.cols - 20)) + "q quits";
+    g.el.textContent = border + "\n" + rows.join("\n") + "\n" + border + "\n" + status;
+  }
+
+  function snakeFood() {
+    const g = snake;
+    let spot;
+    do {
+      spot = { x: Math.floor(Math.random() * g.cols), y: Math.floor(Math.random() * g.rows) };
+    } while (g.body.some(function (c) { return c.x === spot.x && c.y === spot.y; }));
+    g.food = spot;
+  }
+
+  function snakeStep() {
+    const g = snake;
+    g.dir = g.next;
+    const head = { x: g.body[0].x + g.dir.x, y: g.body[0].y + g.dir.y };
+    const hitWall = head.x < 0 || head.y < 0 || head.x >= g.cols || head.y >= g.rows;
+    const hitSelf = g.body.some(function (c) { return c.x === head.x && c.y === head.y; });
+    if (hitWall || hitSelf) return snakeEnd();
+
+    g.body.unshift(head);
+    if (head.x === g.food.x && head.y === g.food.y) {
+      g.score++;
+      if (g.score > g.best) { g.best = g.score; snakeHighScore(g.best); }
+      snakeFood();
+    } else {
+      g.body.pop();
+    }
+    snakeDraw();
+  }
+
+  function snakeEnd() {
+    const g = snake;
+    clearInterval(g.timer);
+    snake = null;
+    busy = false;
+    print("game over. score " + g.score + ", best " + g.best + ".", g.score >= g.best ? "bright" : "warn");
+    print();
+    input.focus({ preventScroll: true });
+    render();
+  }
+
+  const SNAKE_DIRS = {
+    ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 },
+    ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 },
+    w: { x: 0, y: -1 }, s: { x: 0, y: 1 }, a: { x: -1, y: 0 }, d: { x: 1, y: 0 }
+  };
+
+  function snakeTurn(dir) {
+    if (!snake || !dir) return;
+    // No reversing straight into your own neck.
+    if (dir.x === -snake.dir.x && dir.y === -snake.dir.y) return;
+    snake.next = dir;
+  }
+
+  function startSnake() {
+    // Sized to the terminal so it never overflows a phone.
+    const cols = Math.max(16, Math.min(34, Math.floor(screen.clientWidth / charCellWidth()) - 4));
+    const rows = Math.max(9, Math.min(16, Math.round(cols * 0.5)));
+    const el = print("", "snake");
+    snake = {
+      cols: cols, rows: rows, el: el, score: 0, best: snakeHighScore(),
+      dir: { x: 1, y: 0 }, next: { x: 1, y: 0 },
+      body: [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }]
+    };
+    snakeFood();
+    snakeDraw();
+    busy = true;
+    snake.timer = setInterval(snakeStep, SNAKE_TICK);
+
+    // Swipes, so it is playable without a keyboard.
+    let sx = 0, sy = 0;
+    el.addEventListener("touchstart", function (ev) {
+      sx = ev.touches[0].clientX; sy = ev.touches[0].clientY;
+    }, { passive: true });
+    el.addEventListener("touchend", function (ev) {
+      const dx = ev.changedTouches[0].clientX - sx;
+      const dy = ev.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) < 24 && Math.abs(dy) < 24) return;
+      snakeTurn(Math.abs(dx) > Math.abs(dy)
+        ? { x: dx > 0 ? 1 : -1, y: 0 }
+        : { x: 0, y: dy > 0 ? 1 : -1 });
+    }, { passive: true });
+  }
+
+  function charCellWidth() {
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
+    probe.textContent = "0".repeat(50);
+    out.appendChild(probe);
+    const w = probe.getBoundingClientRect().width / 50;
+    probe.remove();
+    return w || 9;
+  }
+
   /* ---------- input ---------- */
 
   const history = [];
@@ -1139,6 +1271,11 @@
   input.addEventListener("focus", render);
 
   input.addEventListener("keydown", function (e) {
+    if (snake) {
+      e.preventDefault();
+      if (e.key === "q" || e.key === "Escape") return snakeEnd();
+      return snakeTurn(SNAKE_DIRS[e.key] || SNAKE_DIRS[e.key.toLowerCase()]);
+    }
     if (busy) { e.preventDefault(); return; }
 
     if (watchKonami(e.key)) {

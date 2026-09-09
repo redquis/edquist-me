@@ -17,7 +17,13 @@ Zero build step. Three static files, no framework, no dependencies beyond a webf
 
 `help` lists them all. Highlights: `about`, `stack`, `now`, `ls` / `cat`, `links`,
 `github`, `linkedin`, `games`, `videogames`, `boardgames`, `neofetch`, `roll 2d20`,
-`matrix`, `theme amber`.
+`matrix`, `theme amber`, `snake`, `share`.
+
+Ctrl+R reverse-searches history and `man <command>` documents any of them,
+hidden ones included.
+
+Any command is linkable: `edquist.me/#boardgames` opens straight to it, and
+`share` copies such a link for whatever you last ran.
 
 Roughly twenty more are hidden and deliberately absent from `help` and tab
 completion. Finding one plays a fanfare; `mute` turns that off. The Konami code
