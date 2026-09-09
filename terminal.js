@@ -1217,7 +1217,8 @@
   }
 
   function echoPrompt(cmd) {
-    printHTML('<span class="prompt"><b>ryan@edquist</b>:<em>~</em>$</span> ' + esc(cmd));
+    printHTML('<span class="prompt"><b>ryan@edquist</b>:<em>~</em>$</span> ' +
+      '<span class="cmd">' + esc(cmd) + "</span>");
   }
 
   function run(raw) {

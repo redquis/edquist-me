@@ -7,13 +7,16 @@
   --muted: #6f8a68;
   --accent: #ffb000;
   --link: #7fe7ff;
+  --fg-body: #9ce690;
   --glow: 0 0 6px rgba(74, 246, 38, .45);
+  --glow-soft: 0 0 3px rgba(74, 246, 38, .22);
   --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 /* `theme amber` swaps the phosphor without touching layout. */
 html[data-theme="amber"] {
   --fg: #ffb000; --fg-dim: #9a6a00; --fg-bright: #ffe0a3; --muted: #937a4a;
-  --accent: #4af626; --glow: 0 0 6px rgba(255, 176, 0, .45);
+  --accent: #4af626; --fg-body: #f2ca7a;
+  --glow: 0 0 6px rgba(255, 176, 0, .45); --glow-soft: 0 0 3px rgba(255, 176, 0, .22);
 }
 
 * { box-sizing: border-box; }
@@ -80,9 +83,9 @@ body {
 /* Scroll anchoring fights the pin-to-bottom on every append. */
 #out { overflow-anchor: none; }
 
-.line { white-space: pre-wrap; word-break: break-word; min-height: 1.65em; }
+.line { white-space: pre-wrap; word-break: break-word; min-height: 1.65em; color: var(--fg-body); }
 .line.dim { color: var(--muted); text-shadow: none; }
-.line.bright { color: var(--fg-bright); }
+.line.bright { color: var(--fg-bright); text-shadow: var(--glow); }
 .line.warn { color: var(--accent); }
 .line.err { color: #ff6b5e; text-shadow: 0 0 6px rgba(255,107,94,.4); }
 /* The wordmark is an inline SVG, so it needs no font metrics at all. */
@@ -143,6 +146,7 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
   text-shadow: var(--glow);
 }
 .prompt { color: var(--fg-dim); margin-right: 8px; white-space: nowrap; }
+.cmd { color: var(--fg-bright); text-shadow: var(--glow); }
 .prompt b { color: var(--fg); font-weight: 700; }
 .prompt em { color: var(--link); font-style: normal; }
 .typed { white-space: pre-wrap; word-break: break-all; color: var(--fg-bright); }
