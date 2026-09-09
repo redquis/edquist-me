@@ -137,8 +137,36 @@
     "Look!", "Come on!", "Hey! Come on!", "Listen to me!"
   ];
 
-  // A fairy sparkle, synthesised. Her actual voice would mean shipping Nintendo's samples.
+  // A fairy sparkle, synthesised, used when there is no voice clip to play.
   const NAVI_CHIME = [[1318.51, .07], [1760.00, .07], [2093.00, .07], [2637.02, .24]];
+
+  /* Plays /audio/navi/<slug>.mp3 if that file exists, and falls back to the
+     sparkle when it does not, so dropping clips in needs no code change.
+     "Hey! Listen!" looks for hey-listen.mp3. Nothing is shipped in the repo. */
+  let naviHasVoice = null; // null until the first clip is tried
+  function naviSound(line) {
+    if (muted) return;
+    const slug = line.toLowerCase().replace(/[^a-z0-9 ]/g, "").trim().replace(/\s+/g, "-");
+    let done = false;
+    function sparkle() {
+      if (done) return;
+      done = true;
+      playNotes(NAVI_CHIME, "sine", 0.13, 0.008);
+    }
+    // One failed lookup is enough: without clips installed, stop asking.
+    if (naviHasVoice === false) return sparkle();
+    try {
+      const clip = new Audio("/audio/navi/" + slug + ".mp3");
+      clip.volume = 0.85;
+      clip.addEventListener("error", function () { naviHasVoice = false; sparkle(); });
+      clip.addEventListener("playing", function () { naviHasVoice = true; done = true; });
+      const started = clip.play();
+      if (started && started.catch) started.catch(sparkle);
+    } catch (e) {
+      naviHasVoice = false;
+      sparkle();
+    }
+  }
 
   const RYAN = [
     "██████  ██    ██  █████  ███    ██ ",
@@ -837,7 +865,7 @@
         print("     \\");
         print("", "navi").innerHTML = bannerSvg(NAVI, "Navi, a fairy");
         stopAudio();
-        playNotes(NAVI_CHIME, "sine", 0.13, 0.008);
+        naviSound(line);
         if (muted) print("(muted, type `mute` to hear her)", "dim");
       }
     },

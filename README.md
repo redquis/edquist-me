@@ -29,6 +29,12 @@ The prose lives in objects at the top of `terminal.js`: `LINKS`, `FILES`,
 `VIDEO_GAMES`, `BOARD_GAMES`, `FORTUNES`, `THROWS`. Change those; nothing else
 needs to move.
 
+## Navi voice clips
+
+Optional, and none are committed. `navi` looks for `audio/navi/<slug>.mp3` and
+falls back to a synthesised sparkle when the file is absent, so the command
+works with the directory empty. See `audio/navi/README.md` for the filenames.
+
 ## Regenerating the share card
 
 `og.png` is built from the same block-grid wordmark the site draws, so it does not
