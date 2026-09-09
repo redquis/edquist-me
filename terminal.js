@@ -120,6 +120,26 @@
     "########################"
   ].map(function (row) { return row.replace(/#/g, "█").replace(/\./g, " "); });
 
+  /* Orb in the middle with a wing either side. Stacking the wings above the orb
+     instead just read as a heart. */
+  const NAVI = [
+    "..###........###..",
+    ".#####......#####.",
+    ".######.##.######.",
+    "..####.####.####..",
+    "...##..####..##...",
+    ".......####.......",
+    "........##........"
+  ].map(function (row) { return row.replace(/#/g, "█").replace(/\./g, " "); });
+
+  const NAVI_LINES = [
+    "Hey!", "Listen!", "Hey! Listen!", "Watch out!", "Hello!",
+    "Look!", "Come on!", "Hey! Come on!", "Listen to me!"
+  ];
+
+  // A fairy sparkle, synthesised. Her actual voice would mean shipping Nintendo's samples.
+  const NAVI_CHIME = [[1318.51, .07], [1760.00, .07], [2093.00, .07], [2637.02, .24]];
+
   const RYAN = [
     "██████  ██    ██  █████  ███    ██ ",
     "██   ██  ██  ██  ██   ██ ████   ██ ",
@@ -302,6 +322,7 @@
   try { muted = localStorage.getItem("muted") === "1"; } catch (e) { /* private mode */ }
 
   // Scheduled oscillators, so a new song can cut off one still playing.
+  let naviIndex = 0;
   let scheduled = [];
   function stopAudio() {
     scheduled.forEach(function (osc) { try { osc.stop(); } catch (e) { /* already done */ } });
@@ -804,6 +825,25 @@
         print("installing 1,482 packages for a static site...", "dim");
         setTimeout(function () { print("kidding. this page has zero dependencies.", "bright"); }, 600);
       }
+    },
+    navi: {
+      hidden: true, silent: true, desc: "",
+      run: function () {
+        const line = NAVI_LINES[naviIndex % NAVI_LINES.length];
+        naviIndex++;
+        print(" " + "_".repeat(line.length + 2));
+        print("< " + line + " >", "bright");
+        print(" " + "-".repeat(line.length + 2));
+        print("     \\");
+        print("", "navi").innerHTML = bannerSvg(NAVI, "Navi, a fairy");
+        stopAudio();
+        playNotes(NAVI_CHIME, "sine", 0.13, 0.008);
+        if (muted) print("(muted, type `mute` to hear her)", "dim");
+      }
+    },
+    navisays: {
+      hidden: true, silent: true, desc: "",
+      run: function () { COMMANDS.navi.run(); }
     },
     cowsay: {
       hidden: true, desc: "",
