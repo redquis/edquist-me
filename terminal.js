@@ -132,10 +132,8 @@
     "........##........"
   ].map(function (row) { return row.replace(/#/g, "█").replace(/\./g, " "); });
 
-  const NAVI_LINES = [
-    "Hey!", "Listen!", "Hey! Listen!", "Watch out!", "Hello!",
-    "Look!", "Come on!", "Hey! Come on!", "Listen to me!"
-  ];
+  // Only lines she actually says, and each has a clip in audio/navi.
+  const NAVI_LINES = ["Hey!", "Listen!", "Hey! Listen!", "Watch out!", "Hello!", "Look!"];
 
   // A fairy sparkle, synthesised, used when there is no voice clip to play.
   const NAVI_CHIME = [[1318.51, .07], [1760.00, .07], [2093.00, .07], [2637.02, .24]];

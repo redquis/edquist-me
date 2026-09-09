@@ -1,8 +1,8 @@
 # Navi voice clips
 
-Optional. `navi` looks for a file here matching the line it prints, and falls
-back to a synthesised sparkle when the file is absent, so nothing breaks if
-this directory stays empty.
+`navi` plays the clip matching the line it prints, and falls back to a
+synthesised sparkle if a file is missing, so the command still works when one
+is absent.
 
 Naming: lowercase the line, drop punctuation, hyphenate spaces.
 
@@ -14,10 +14,9 @@ Naming: lowercase the line, drop punctuation, hyphenate spaces.
 | Watch out! | `watch-out.mp3` |
 | Hello! | `hello.mp3` |
 | Look! | `look.mp3` |
-| Come on! | `come-on.mp3` |
-| Hey! Come on! | `hey-come-on.mp3` |
-| Listen to me! | `listen-to-me.mp3` |
 
-Whatever goes here is served publicly from edquist.me, so it wants to be audio
-you have the right to distribute: your own recording, a soundalike, or a
-licensed clip.
+Adding a line means adding it to `NAVI_LINES` in `terminal.js` and dropping the
+matching file here.
+
+These are served publicly from edquist.me, so they want to be audio you have
+the right to distribute.
