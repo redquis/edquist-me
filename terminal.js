@@ -619,7 +619,7 @@
           print("  " + name + " ".repeat(width - name.length + 4) + COMMANDS[name].desc);
         });
         print();
-        print("tab completes · up/down walks history · ctrl+l clears", "dim");
+        print("tab completes · up/down walks history · ctrl+r searches it · ctrl+l clears", "dim");
         print();
       }
     },
@@ -991,7 +991,7 @@
     pwd: { hidden: true, silent: true, desc: "", run: function () { print("/home/ryan"); } },
     cd: { hidden: true, silent: true, desc: "", run: function () { print("there is nowhere else to go.", "dim"); } },
     man: {
-      hidden: true, silent: true, desc: "",
+      silent: true, desc: "read the manual. try: man ocarina",
       run: function (args) {
         const name = (args[0] || "").toLowerCase();
         if (!name) return print("what manual page do you want?", "err");
