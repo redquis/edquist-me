@@ -795,6 +795,31 @@
         setTimeout(reboot, 500);
       }
     },
+    man: {
+      silent: true, desc: "read the manual. try: man ocarina",
+      run: function (args) {
+        const name = (args[0] || "").toLowerCase();
+        if (!name) return print("what manual page do you want?", "err");
+        const cmd = COMMANDS[name];
+        if (!cmd) return print("no manual entry for " + name, "err");
+        print();
+        print("NAME", "bright");
+        print("  " + name + (cmd.desc ? "  -  " + cmd.desc : ""));
+        print();
+        print("SYNOPSIS", "bright");
+        print("  " + (USAGE[name] || name));
+        if (MANUAL[name]) {
+          print();
+          print("DESCRIPTION", "bright");
+          MANUAL[name].forEach(function (l) { print("  " + l); });
+        }
+        if (cmd.hidden) {
+          print();
+          print("  undocumented. you found it anyway.", "dim");
+        }
+        print();
+      }
+    },
     sudo: {
       desc: "nice try",
       run: function (args) {
@@ -990,31 +1015,6 @@
     },
     pwd: { hidden: true, silent: true, desc: "", run: function () { print("/home/ryan"); } },
     cd: { hidden: true, silent: true, desc: "", run: function () { print("there is nowhere else to go.", "dim"); } },
-    man: {
-      silent: true, desc: "read the manual. try: man ocarina",
-      run: function (args) {
-        const name = (args[0] || "").toLowerCase();
-        if (!name) return print("what manual page do you want?", "err");
-        const cmd = COMMANDS[name];
-        if (!cmd) return print("no manual entry for " + name, "err");
-        print();
-        print("NAME", "bright");
-        print("  " + name + (cmd.desc ? "  -  " + cmd.desc : ""));
-        print();
-        print("SYNOPSIS", "bright");
-        print("  " + (USAGE[name] || name));
-        if (MANUAL[name]) {
-          print();
-          print("DESCRIPTION", "bright");
-          MANUAL[name].forEach(function (l) { print("  " + l); });
-        }
-        if (cmd.hidden) {
-          print();
-          print("  undocumented. you found it anyway.", "dim");
-        }
-        print();
-      }
-    },
     ping: { hidden: true, silent: true, desc: "", run: function () { print("pong. 0.0ms. it is all running in your browser."); } },
     hello: { hidden: true, silent: true, desc: "", run: function () { print("hi."); } },
     tea: {
