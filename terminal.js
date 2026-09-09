@@ -348,7 +348,20 @@
   try { muted = localStorage.getItem("muted") === "1"; } catch (e) { /* private mode */ }
 
   // Scheduled oscillators, so a new song can cut off one still playing.
+  let lastCommand = "";
   let naviIndex = 0;
+
+  /* Deep links: edquist.me/#boardgames opens straight to that command. Only
+     known command names are honoured, so a stray fragment does nothing. */
+  function runHash() {
+    const raw = decodeURIComponent(location.hash.replace(/^#/, "")).trim();
+    if (!raw) return false;
+    const name = raw.split(/\s+/)[0].toLowerCase();
+    if (!COMMANDS[name]) return false;
+    run(raw);
+    render();
+    return true;
+  }
   let scheduled = [];
   function stopAudio() {
     scheduled.forEach(function (osc) { try { osc.stop(); } catch (e) { /* already done */ } });
@@ -719,6 +732,21 @@
         print();
       }
     },
+    share: {
+      desc: "copy a link to what you just ran",
+      run: function () {
+        const target = lastCommand || "help";
+        const url = location.origin + "/#" + encodeURIComponent(target);
+        printHTML("  " + anchor(url, url), "bright");
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+          return print("  copy it from above.", "dim");
+        }
+        navigator.clipboard.writeText(url).then(
+          function () { print("  copied. opens straight to `" + target + "`.", "dim"); },
+          function () { print("  copy it from above.", "dim"); }
+        );
+      }
+    },
     clear: { desc: "wipe the screen", run: function () { out.innerHTML = ""; } },
     reboot: {
       desc: "restart the terminal",
@@ -991,6 +1019,8 @@
       if (near) print("did you mean `" + near + "`?", "dim");
       return;
     }
+    // `share` links to what you were looking at, so it must not record itself.
+    if (name !== "share") lastCommand = line;
     try { cmd.run(parts.slice(1)); }
     catch (err) { print("unhandled: " + err.message, "err"); }
 
@@ -1158,7 +1188,10 @@
     inputline.hidden = false;
     input.focus({ preventScroll: true });
     render();
+    runHash();
   }
+
+  window.addEventListener("hashchange", function () { if (!busy) runHash(); });
 
   boot();
 })();

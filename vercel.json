@@ -17,7 +17,7 @@
       ]
     },
     {
-      "source": "/:file(styles.css|terminal.js|rain.js|analytics.js)",
+      "source": "/:file(styles.css|terminal.js|rain.js|analytics.js|notfound.js)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
