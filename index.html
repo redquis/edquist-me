@@ -44,8 +44,9 @@
       <div id="out" role="log" aria-live="polite" aria-label="Terminal output"></div>
 
       <div class="inputline" id="inputline" hidden>
-        <span class="prompt" aria-hidden="true"><b>ryan@edquist</b>:<em>~</em>$</span>
-        <span class="typed" id="typed"></span><span class="caret" id="caret"></span>
+        <span class="prompt" id="prompt" aria-hidden="true"><b>ryan@edquist</b>:<em>~</em>$</span>
+        <span class="rprompt" id="rprompt" aria-hidden="true" hidden></span>
+        <span class="typed" id="typed"></span><span class="caret" id="caret"></span><span class="rmatch" id="rmatch" aria-hidden="true"></span>
         <label class="sr-only" for="cmd">Type a command</label>
         <input id="cmd" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       </div>

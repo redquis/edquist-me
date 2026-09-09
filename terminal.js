@@ -5,6 +5,9 @@
   const typed = document.getElementById("typed");
   const caret = document.getElementById("caret");
   const input = document.getElementById("cmd");
+  const promptEl = document.getElementById("prompt");
+  const rpromptEl = document.getElementById("rprompt");
+  const rmatchEl = document.getElementById("rmatch");
 
   const LINKS = {
     github: ["https://github.com/redquis", "GitHub - code, mostly in public"],
@@ -348,6 +351,35 @@
   try { muted = localStorage.getItem("muted") === "1"; } catch (e) { /* private mode */ }
 
   // Scheduled oscillators, so a new song can cut off one still playing.
+  const USAGE = {
+    cat: "cat <file>",
+    roll: "roll [NdM]",
+    theme: "theme <amber|green>",
+    echo: "echo <text>",
+    ocarina: "ocarina <song>",
+    cowsay: "cowsay [text]",
+    man: "man <command>",
+    git: "git [status|blame|push|log]",
+    sudo: "sudo <command>"
+  };
+
+  const MANUAL = {
+    cat: ["Prints one of the files listed by `ls`."],
+    ls: ["Lists the readable files. Pair with `cat`."],
+    roll: ["Rolls N dice of M sides. Defaults to 1d6.", "N is capped at 20, M at 1000."],
+    theme: ["Switches the phosphor colour. The choice is remembered."],
+    matrix: ["Cycles the background rain: ambient, storm, off."],
+    ocarina: [
+      "Plays the button phrase of a song, then answers with the tune.",
+      "Run it bare to list the twelve songs."
+    ],
+    share: ["Copies a link that opens straight to the last command you ran."],
+    reboot: ["Clears the screen and replays the boot sequence."],
+    mute: ["Toggles sound. The setting is remembered."],
+    history: ["Lists this session's commands. Ctrl+R searches them."],
+    help: ["Lists the documented commands. Roughly twenty more are not."]
+  };
+
   let lastCommand = "";
   let naviIndex = 0;
 
@@ -951,7 +983,31 @@
     },
     pwd: { hidden: true, silent: true, desc: "", run: function () { print("/home/ryan"); } },
     cd: { hidden: true, silent: true, desc: "", run: function () { print("there is nowhere else to go.", "dim"); } },
-    man: { hidden: true, silent: true, desc: "", run: function () { print("no manual entry. try `help`.", "dim"); } },
+    man: {
+      hidden: true, silent: true, desc: "",
+      run: function (args) {
+        const name = (args[0] || "").toLowerCase();
+        if (!name) return print("what manual page do you want?", "err");
+        const cmd = COMMANDS[name];
+        if (!cmd) return print("no manual entry for " + name, "err");
+        print();
+        print("NAME", "bright");
+        print("  " + name + (cmd.desc ? "  -  " + cmd.desc : ""));
+        print();
+        print("SYNOPSIS", "bright");
+        print("  " + (USAGE[name] || name));
+        if (MANUAL[name]) {
+          print();
+          print("DESCRIPTION", "bright");
+          MANUAL[name].forEach(function (l) { print("  " + l); });
+        }
+        if (cmd.hidden) {
+          print();
+          print("  undocumented. you found it anyway.", "dim");
+        }
+        print();
+      }
+    },
     ping: { hidden: true, silent: true, desc: "", run: function () { print("pong. 0.0ms. it is all running in your browser."); } },
     hello: { hidden: true, silent: true, desc: "", run: function () { print("hi."); } },
     tea: {
@@ -988,13 +1044,44 @@
 
   const history = [];
   let historyIndex = -1;
+  let searching = false;
+  let searchFrom = 0;
   let draft = "";
   let busy = true;
+
+  function searchMatch() {
+    const q = input.value.toLowerCase();
+    if (!q) return "";
+    for (let i = history.length - 1 - searchFrom; i >= 0; i--) {
+      if (history[i].toLowerCase().indexOf(q) !== -1) return history[i];
+    }
+    return "";
+  }
 
   function render() {
     typed.textContent = input.value;
     caret.classList.toggle("off", document.activeElement !== input);
+    promptEl.hidden = searching;
+    rpromptEl.hidden = !searching;
+    if (searching) {
+      rpromptEl.textContent = "(reverse-i-search)`";
+      const hit = searchMatch();
+      rmatchEl.textContent = "`: " + hit;
+      rmatchEl.classList.toggle("miss", !hit && input.value !== "");
+    } else {
+      rmatchEl.textContent = "";
+      rmatchEl.classList.remove("miss");
+    }
     scroll();
+  }
+
+  function endSearch(accept) {
+    if (!searching) return;
+    const hit = accept ? searchMatch() : "";
+    searching = false;
+    searchFrom = 0;
+    input.value = hit || (accept ? input.value : draft);
+    render();
   }
 
   function echoPrompt(cmd) {
@@ -1062,6 +1149,31 @@
       secretFound();
       render();
       return;
+    }
+
+    if ((e.key === "r" || e.key === "R") && e.ctrlKey) {
+      e.preventDefault();
+      if (!searching) {
+        draft = input.value;
+        searching = true;
+        searchFrom = 0;
+        input.value = "";
+      } else {
+        // Already searching: step past the current hit to the next older one.
+        const at = history.lastIndexOf(searchMatch());
+        if (at > 0) searchFrom = history.length - at;
+      }
+      return render();
+    }
+
+    if (searching && (e.key === "Escape" || (e.key === "g" && e.ctrlKey))) {
+      e.preventDefault();
+      return endSearch(false);
+    }
+
+    if (searching && e.key === "Enter") {
+      e.preventDefault();
+      return endSearch(true);
     }
 
     if (e.key === "Enter") {

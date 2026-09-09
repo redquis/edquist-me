@@ -200,3 +200,8 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
   .scanlines { opacity: .18; }
 }
 
+
+/* Reverse-i-search prompt and its current hit. */
+.rprompt { color: var(--accent); white-space: nowrap; margin-right: 8px; }
+.rmatch { color: var(--fg-bright); }
+.rmatch.miss { color: #ff6b5e; }
