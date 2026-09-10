@@ -169,6 +169,33 @@
     }
   }
 
+  // Side profile, gullwing doors up.
+  const DELOREAN = [
+    "..###.....................###.........",
+    "...####.................####..........",
+    "....#####.............#####...........",
+    ".....######.........######............",
+    "........#################.............",
+    "......#####################...........",
+    "...##############################.....",
+    "..################################....",
+    "..################################....",
+    "..####...########.....########...####.",
+    ".........######.........######........",
+    ".........######.........######........"
+  ].map(function (row) { return row.replace(/#/g, "\u2588").replace(/\./g, " "); });
+
+  const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+  function circuitDate(d) {
+    const hh = d.getHours() % 12 || 12;
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return MONTHS[d.getMonth()] + " " + String(d.getDate()).padStart(2, "0") +
+      " " + d.getFullYear() + "   " + String(hh).padStart(2, " ") + ":" + mm +
+      " " + (d.getHours() < 12 ? "AM" : "PM");
+  }
+
   const RYAN = [
     "██████  ██    ██  █████  ███    ██ ",
     "██   ██  ██  ██  ██   ██ ████   ██ ",
@@ -966,6 +993,87 @@
     navisays: {
       hidden: true, silent: true, desc: "",
       run: function () { COMMANDS.navi.run(); }
+    },
+    timecircuits: {
+      g: "fun", silent: true, desc: "the DeLorean dashboard",
+      run: function () {
+        print();
+        printHTML('<span class="tc-label tc-dest">DESTINATION TIME</span>');
+        printHTML('<span class="tc-dest">  ' + esc(circuitDate(new Date(1985, 9, 26, 1, 21))) + "</span>");
+        printHTML('<span class="tc-label tc-now">PRESENT TIME</span>');
+        printHTML('<span class="tc-now">  ' + esc(circuitDate(new Date())) + "</span>");
+        printHTML('<span class="tc-label tc-last">LAST TIME DEPARTED</span>');
+        printHTML('<span class="tc-last">  ' + esc(circuitDate(new Date(1955, 10, 12, 22, 4))) + "</span>");
+        print();
+      }
+    },
+    88: {
+      g: "fun", silent: true, desc: "get up to 88 mph",
+      run: function () {
+        const line = print("", "warn");
+        const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const steps = 40;
+        let i = 0;
+
+        if (!muted) {
+          // A rising whine up to the jump.
+          const notes = [];
+          for (let n = 0; n < 14; n++) notes.push([180 + n * 62, 0.16]);
+          stopAudio();
+          playNotes(notes, "sawtooth", 0.07, 0.02);
+        }
+
+        const draw = function (mph) {
+          const filled = Math.round((mph / 88) * 24);
+          line.textContent = "  [" + "=".repeat(filled) + " ".repeat(24 - filled) + "]  " +
+            String(Math.round(mph)).padStart(2, " ") + " mph";
+        };
+        draw(0);
+
+        const timer = setInterval(function () {
+          i++;
+          draw((i / steps) * 88);
+          if (i < steps) return;
+          clearInterval(timer);
+          line.classList.add("bright");
+          if (!skip) {
+            const flash = document.createElement("div");
+            flash.className = "flash";
+            document.body.appendChild(flash);
+            setTimeout(function () { flash.remove(); }, 700);
+          }
+          setTimeout(function () {
+            print("roads? where we're going, we don't need roads.", "bright");
+            print();
+          }, 420);
+        }, 58);
+      }
+    },
+    delorean: {
+      g: "fun", silent: true, desc: "doors up",
+      run: function () {
+        print("", "delorean").innerHTML = bannerSvg(DELOREAN, "a DeLorean with its doors up");
+        print("  OUTATIME", "dim");
+      }
+    },
+    gigawatts: {
+      hidden: true, desc: "",
+      run: function () {
+        print("1.21 gigawatts?! Great Scott!", "warn");
+        print("the only power source capable of generating that is a bolt of lightning.", "dim");
+      }
+    },
+    mcfly: {
+      hidden: true, desc: "",
+      run: function () { print("Hello? Hello? Anybody home? Think, McFly, think!", "warn"); }
+    },
+    outatime: {
+      hidden: true, desc: "",
+      run: function () { print("the plate reads OUTATIME. try `delorean`.", "dim"); }
+    },
+    roads: {
+      hidden: true, desc: "",
+      run: function () { print("where we're going, we don't need roads.", "bright"); }
     },
     cowsay: {
       g: "fun", desc: "a cow says what you tell it",

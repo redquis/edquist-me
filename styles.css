@@ -224,3 +224,24 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
   padding: 6px 10px 8px 0;
   border-radius: 3px;
 }
+
+/* Time circuit display: the dashboard's own colours, not the theme's. */
+.tc-label { color: inherit; opacity: .75; font-size: .82em; letter-spacing: .12em; }
+.tc-dest { color: #ff5f56; text-shadow: 0 0 6px rgba(255, 95, 86, .5); }
+.tc-now { color: #4af626; text-shadow: 0 0 6px rgba(74, 246, 38, .5); }
+.tc-last { color: #ffb000; text-shadow: 0 0 6px rgba(255, 176, 0, .5); }
+
+.line.delorean {
+  min-height: 0;
+  color: var(--fg-bright);
+  margin: 4px 0 6px;
+  filter: drop-shadow(0 0 8px rgba(185, 255, 168, .35));
+}
+.line.delorean svg { display: block; width: min(260px, 72%); height: auto; }
+
+/* The 88 mph jump. */
+.flash {
+  position: fixed; inset: 0; z-index: 9; pointer-events: none;
+  background: #eaf7ff; animation: flashout .65s ease-out forwards;
+}
+@keyframes flashout { from { opacity: .8 } to { opacity: 0 } }
