@@ -111,7 +111,7 @@ body {
   margin: 2px 0 8px 3ch;
   filter: drop-shadow(0 0 9px rgba(127, 231, 255, .55));
 }
-.line.navi svg { display: block; width: min(110px, 34%); height: auto; }
+.line.navi svg { display: block; width: min(140px, 40%); height: auto; }
 
 /* Ocarina buttons, drawn as N64 button faces rather than bare arrow glyphs. */
 .line.notes {

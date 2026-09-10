@@ -123,17 +123,6 @@
     "########################"
   ].map(function (row) { return row.replace(/#/g, "█").replace(/\./g, " "); });
 
-  /* Orb in the middle with a wing either side. Stacking the wings above the orb
-     instead just read as a heart. */
-  const NAVI = [
-    "..###........###..",
-    ".#####......#####.",
-    ".######.##.######.",
-    "..####.####.####..",
-    "...##..####..##...",
-    ".......####.......",
-    "........##........"
-  ].map(function (row) { return row.replace(/#/g, "█").replace(/\./g, " "); });
 
   // Only lines she actually says, and each has a clip in audio/navi.
   const NAVI_LINES = ["Hey!", "Listen!", "Hey! Listen!", "Watch out!", "Hello!", "Look!"];
@@ -169,23 +158,46 @@
     }
   }
 
-  // Side profile, gullwing doors up.
-  const DELOREAN = [
-    "..........###...........###.....",
-    ".........####...........####....",
-    "........####.............####...",
-    "........####################....",
-    "........##................##....",
-    "........##................##....",
-    ".....########################...",
-    "...############################.",
-    "..##############################",
-    "..##############################",
-    "..###...########.....########...",
-    ".......########.....########....",
-    ".......########.....########....",
-    "........######.......######....."
-  ].map(function (row) { return row.replace(/#/g, "\u2588").replace(/\./g, " "); });
+
+  /* Drawn rather than tiled. At this size a block grid could only manage
+     "blob"; curves are what make these read as a car and a fairy. */
+  const DELOREAN_SVG = [
+    '<svg viewBox="0 0 264 132" fill="none" stroke="currentColor" stroke-width="3"',
+    ' stroke-linejoin="round" stroke-linecap="round" role="img"',
+    ' aria-label="a DeLorean with its gullwing door up">',
+    '<path d="M150 55 L112 12 L136 2 L172 42 Z"/>',
+    '<path d="M146 48 L122 21 L132 17 L157 44 Z" stroke-width="2" opacity=".55"/>',
+    '<path d="M14 100 L18 84 L58 76 L96 74 L118 56 L176 54 L202 70 L238 78 L249 88',
+    ' L247 100 L217 100 A17 17 0 0 1 183 100 L89 100 A17 17 0 0 1 55 100 Z"/>',
+    '<path d="M120 58 L101 72 L133 71 Z" stroke-width="2"/>',
+    '<path d="M140 71 L142 58 L172 57 L175 70 Z" stroke-width="2"/>',
+    '<path d="M122 88 L180 86" stroke-width="2" opacity=".45"/>',
+    '<circle cx="72" cy="100" r="16"/><circle cx="72" cy="100" r="6" stroke-width="2"/>',
+    '<circle cx="200" cy="100" r="16"/><circle cx="200" cy="100" r="6" stroke-width="2"/>',
+    "</svg>"
+  ].join("");
+
+  const NAVI_SVG = [
+    '<svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2.5"',
+    ' role="img" aria-label="Navi, a fairy">',
+    '<g opacity=".9">',
+    '<ellipse cx="28" cy="40" rx="23" ry="11" transform="rotate(-34 28 40)"',
+    ' fill="currentColor" fill-opacity=".14"/>',
+    '<ellipse cx="92" cy="40" rx="23" ry="11" transform="rotate(34 92 40)"',
+    ' fill="currentColor" fill-opacity=".14"/>',
+    '</g><g opacity=".6">',
+    '<ellipse cx="33" cy="72" rx="15" ry="8" transform="rotate(-16 33 72)"',
+    ' fill="currentColor" fill-opacity=".1"/>',
+    '<ellipse cx="87" cy="72" rx="15" ry="8" transform="rotate(16 87 72)"',
+    ' fill="currentColor" fill-opacity=".1"/>',
+    "</g>",
+    '<circle cx="60" cy="58" r="21" opacity=".5"/>',
+    '<circle cx="60" cy="58" r="13" fill="currentColor" stroke="none"/>',
+    '<path d="M60 96 l4 7 -4 7 -4 -7 Z" fill="currentColor" stroke="none" opacity=".7"/>',
+    '<path d="M18 96 l3 5 -3 5 -3 -5 Z" fill="currentColor" stroke="none" opacity=".45"/>',
+    '<path d="M102 92 l3 5 -3 5 -3 -5 Z" fill="currentColor" stroke="none" opacity=".45"/>',
+    "</svg>"
+  ].join("");
 
   const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
     "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
@@ -1058,7 +1070,7 @@
         print("< " + line + " >", "bright");
         print(" " + "-".repeat(line.length + 2));
         print("     \\");
-        print("", "navi").innerHTML = bannerSvg(NAVI, "Navi, a fairy");
+        print("", "navi").innerHTML = NAVI_SVG;
         stopAudio();
         naviSound(line);
         if (muted) print("(muted, type `mute` to hear her)", "dim");
@@ -1126,7 +1138,7 @@
     delorean: {
       g: "fun", silent: true, desc: "doors up",
       run: function () {
-        print("", "delorean").innerHTML = bannerSvg(DELOREAN, "a DeLorean with its doors up");
+        print("", "delorean").innerHTML = DELOREAN_SVG;
         print("  OUTATIME", "dim");
       }
     },
