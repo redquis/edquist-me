@@ -1249,6 +1249,8 @@
 
   const SNAKE_TICK = 110;
   const SNAKE_TOP = { who: "Ryan", score: 103 };
+  // Two characters per cell, so a step up covers the same ground as a step across.
+  const SNAKE_CELL = 2;
   let snake = null;
 
   function snakeHighScore(next) {
@@ -1265,19 +1267,20 @@
     for (let y = 0; y < g.rows; y++) {
       let row = "";
       for (let x = 0; x < g.cols; x++) {
-        if (g.food.x === x && g.food.y === y) { row += "*"; continue; }
+        if (g.food.x === x && g.food.y === y) { row += "**"; continue; }
         const onBody = g.body.some(function (c, i) { return i > 0 && c.x === x && c.y === y; });
-        if (g.body[0].x === x && g.body[0].y === y) row += "@";
-        else if (onBody) row += "o";
-        else row += " ";
+        if (g.body[0].x === x && g.body[0].y === y) row += "@@";
+        else if (onBody) row += "oo";
+        else row += "  ";
       }
       rows.push("  |" + row + "|");
     }
-    const border = "  +" + "-".repeat(g.cols) + "+";
+    const width = g.cols * SNAKE_CELL;
+    const border = "  +" + "-".repeat(width) + "+";
     const mine = "score " + g.score + "   best " + g.best;
     const top = "top  " + SNAKE_TOP.who + " " + SNAKE_TOP.score;
     // Two lines when one would run past the board and get clipped.
-    const status = (mine.length + top.length + 3 <= g.cols)
+    const status = (mine.length + top.length + 3 <= width)
       ? "  " + mine + "   " + top
       : "  " + mine + "\n  " + top;
     g.el.textContent = border + "\n" + rows.join("\n") + "\n" + border + "\n" + status;
@@ -1342,8 +1345,9 @@
 
   function startSnake() {
     // Sized to the terminal so it never overflows a phone.
-    const cols = Math.max(16, Math.min(34, Math.floor(screen.clientWidth / charCellWidth()) - 4));
-    const rows = Math.max(9, Math.min(16, Math.round(cols * 0.5)));
+    const chars = Math.floor(screen.clientWidth / charCellWidth()) - 4;
+    const cols = Math.max(10, Math.min(22, Math.floor(chars / SNAKE_CELL)));
+    const rows = Math.max(9, Math.min(15, Math.round(cols * 0.7)));
     const el = print("", "snake");
     snake = {
       cols: cols, rows: rows, el: el, score: 0, best: snakeHighScore(),
