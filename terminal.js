@@ -608,15 +608,19 @@
 
   const COMMANDS = {
     help: {
-      desc: "list every command",
+      g: "shell", desc: "list the commands",
       run: function () {
-        print();
-        print("available commands", "bright");
-        print();
         const names = Object.keys(COMMANDS).filter(function (k) { return !COMMANDS[k].hidden; });
         const width = Math.max.apply(null, names.map(function (k) { return k.length; }));
-        names.forEach(function (name) {
-          print("  " + name + " ".repeat(width - name.length + 4) + COMMANDS[name].desc);
+        const SECTIONS = [["me", "about me"], ["fun", "for fun"], ["shell", "the shell"]];
+        SECTIONS.forEach(function (section) {
+          const inSection = names.filter(function (k) { return (COMMANDS[k].g || "shell") === section[0]; });
+          if (!inSection.length) return;
+          print();
+          print(section[1], "bright");
+          inSection.forEach(function (name) {
+            print("  " + name + " ".repeat(width - name.length + 4) + COMMANDS[name].desc);
+          });
         });
         print();
         print("tab completes · up/down walks history · ctrl+r searches it · ctrl+l clears", "dim");
@@ -624,7 +628,7 @@
       }
     },
     whoami: {
-      desc: "the short version",
+      g: "me", desc: "the short version",
       run: function () {
         print();
         print("ryan edquist", "bright");
@@ -634,11 +638,11 @@
         print();
       }
     },
-    about: { desc: "the longer version", run: function () { cat("about.txt"); } },
-    stack: { desc: "what I build with", run: function () { cat("stack.txt"); } },
-    now: { desc: "what I am working on", run: function () { cat("now.txt"); } },
+    about: { g: "me", desc: "the longer version", run: function () { cat("about.txt"); } },
+    stack: { g: "me", desc: "what I build with", run: function () { cat("stack.txt"); } },
+    now: { g: "me", desc: "what I am working on", run: function () { cat("now.txt"); } },
     links: {
-      desc: "everywhere else I exist",
+      g: "me", desc: "everywhere else I exist",
       run: function () {
         print();
         Object.keys(LINKS).forEach(function (key) {
@@ -653,12 +657,12 @@
         print();
       }
     },
-    github: { desc: "→ github.com/redquis", run: function () { openLink("github"); } },
-    linkedin: { desc: "→ linkedin.com/in/redquist", run: function () { openLink("linkedin"); } },
-    games: { desc: "→ illustriousgamesllc.com", run: function () { openLink("games"); } },
-    email: { desc: "→ ryan@edquist.me", run: function () { openLink("email"); } },
+    github: { g: "me", desc: "→ github.com/redquis", run: function () { openLink("github"); } },
+    linkedin: { g: "me", desc: "→ linkedin.com/in/redquist", run: function () { openLink("linkedin"); } },
+    games: { g: "me", desc: "→ illustriousgamesllc.com", run: function () { openLink("games"); } },
+    email: { g: "me", desc: "→ ryan@edquist.me", run: function () { openLink("email"); } },
     ls: {
-      desc: "list files",
+      g: "me", desc: "list files",
       run: function () {
         print();
         Object.keys(FILES).forEach(function (name) {
@@ -670,27 +674,27 @@
       }
     },
     cat: {
-      desc: "read a file. try: cat about.txt",
+      g: "me", desc: "read a file. try: cat about.txt",
       run: function (args) {
         if (!args[0]) return print("usage: cat <file>   (try `ls`)", "err");
         cat(args[0]);
       }
     },
     videogames: {
-      desc: "my top 10 video games",
+      g: "me", desc: "my top 10 video games",
       run: function () { printList("top 10 video games", VIDEO_GAMES); }
     },
     boardgames: {
-      desc: "my top 5 board games",
+      g: "me", desc: "my top 5 board games",
       run: function () {
         printList("top 5 board games", BOARD_GAMES,
           "and no, none of mine made the list. putting your own games in your own " +
           "top 5 is a bit much, even for me. type `games` and judge for yourself.");
       }
     },
-    roll: { desc: "roll dice, 1d6 by default. try: roll 2d20", run: function (args) { rollDice(args[0]); } },
+    roll: { g: "fun", desc: "roll dice, 1d6 by default. try: roll 2d20", run: function (args) { rollDice(args[0]); } },
     matrix: {
-      desc: "cycle the rain: ambient / storm / off",
+      g: "fun", desc: "cycle the rain: ambient / storm / off",
       run: function () {
         if (!window.rain) return print("rain unavailable.", "err");
         const level = window.rain.cycle();
@@ -698,7 +702,7 @@
       }
     },
     theme: {
-      desc: "phosphor color. try: theme amber",
+      g: "shell", desc: "phosphor color. try: theme amber",
       run: function (args) {
         const want = (args[0] || "").toLowerCase();
         if (want === "amber" || want === "green") {
@@ -710,7 +714,7 @@
       }
     },
     neofetch: {
-      desc: "system info, obviously",
+      g: "shell", desc: "system info, obviously",
       run: function () {
         const art = [
           "   ▄▄▄▄▄▄▄▄▄▄▄▄▄   ",
@@ -750,10 +754,10 @@
         print();
       }
     },
-    date: { desc: "what time is it", run: function () { print(new Date().toString()); } },
-    echo: { desc: "say it back", run: function (args) { print(args.join(" ")); } },
+    date: { g: "shell", desc: "what time is it", run: function () { print(new Date().toString()); } },
+    echo: { g: "shell", desc: "say it back", run: function (args) { print(args.join(" ")); } },
     history: {
-      desc: "commands this session",
+      g: "shell", desc: "commands this session",
       run: function () {
         if (!history.length) return print("nothing yet.", "dim");
         print();
@@ -765,14 +769,14 @@
       }
     },
     snake: {
-      desc: "play snake. arrows or wasd, q quits",
+      g: "fun", desc: "play snake. arrows or wasd, q quits",
       run: function () {
         print("arrows or wasd to steer, q to quit. swipe works too.", "dim");
         startSnake();
       }
     },
     share: {
-      desc: "copy a link to what you just ran",
+      g: "shell", desc: "copy a link to what you just ran",
       run: function () {
         const target = lastCommand || "help";
         const url = location.origin + "/#" + encodeURIComponent(target);
@@ -786,9 +790,9 @@
         );
       }
     },
-    clear: { desc: "wipe the screen", run: function () { out.innerHTML = ""; } },
+    clear: { g: "shell", desc: "wipe the screen", run: function () { out.innerHTML = ""; } },
     reboot: {
-      desc: "restart the terminal",
+      g: "shell", desc: "restart the terminal",
       run: function () {
         print("shutting down...", "warn");
         // Let the line render before the screen is wiped out from under it.
@@ -796,7 +800,7 @@
       }
     },
     man: {
-      silent: true, desc: "read the manual. try: man ocarina",
+      silent: true, g: "shell", desc: "read the manual. try: man ocarina",
       run: function (args) {
         const name = (args[0] || "").toLowerCase();
         if (!name) return print("what manual page do you want?", "err");
@@ -821,14 +825,14 @@
       }
     },
     sudo: {
-      desc: "nice try",
+      g: "shell", desc: "nice try",
       run: function (args) {
         print(args.length ? "ryan is not in the sudoers file." : "usage: sudo <command>", "err");
         if (args.length) print("this incident has been reported.", "dim");
       }
     },
     exit: {
-      desc: "leave (you cannot)",
+      g: "shell", desc: "leave (you cannot)",
       run: function () {
         print("there is no exit. there is only refresh.", "warn");
         print("but the links at the bottom lead somewhere real.", "dim");
@@ -836,7 +840,7 @@
     },
     zelda: {
       // Silent so the fanfare lands on the item, not before the chest opens.
-      hidden: true, silent: true, desc: "",
+      silent: true, g: "fun", desc: "open the chest",
       run: function () {
         print("you open the chest...", "dim");
         // Drawn, not typed: box characters cannot join across a 1.65 line height,
@@ -854,7 +858,7 @@
       }
     },
     ocarina: {
-      hidden: true, silent: true, desc: "",
+      silent: true, g: "fun", desc: "play a Zelda song. try: ocarina storms",
       run: function (args) {
         const key = (args[0] || "").toLowerCase();
         if (!SONGS[key]) {
@@ -888,7 +892,7 @@
       run: function () { print("nothing happens.", "dim"); }
     },
     fortune: {
-      hidden: true, desc: "",
+      g: "fun", desc: "a hard-won truth, at random",
       run: function () {
         print();
         print("  " + FORTUNES[Math.floor(Math.random() * FORTUNES.length)]);
@@ -896,7 +900,7 @@
       }
     },
     throw: {
-      hidden: true, desc: "",
+      g: "me", desc: "throw a disc, see what happens",
       run: function () {
         const discs = ["a Destroyer", "a Buzzz", "a Leopard3", "a Zone", "a beat-in Roc"];
         print("you throw " + discs[Math.floor(Math.random() * discs.length)] + "...", "dim");
@@ -904,7 +908,7 @@
       }
     },
     discgolf: {
-      hidden: true, desc: "",
+      g: "me", desc: "my disc golf career, such as it is",
       run: function () {
         print();
         print("  status     aspiring pro. emphasis on aspiring.", "dim");
@@ -945,7 +949,7 @@
       }
     },
     navi: {
-      hidden: true, silent: true, desc: "",
+      silent: true, g: "fun", desc: "hey! listen!",
       run: function () {
         const line = NAVI_LINES[naviIndex % NAVI_LINES.length];
         naviIndex++;
@@ -964,7 +968,7 @@
       run: function () { COMMANDS.navi.run(); }
     },
     cowsay: {
-      hidden: true, desc: "",
+      g: "fun", desc: "a cow says what you tell it",
       run: function (args) {
         const msg = args.length ? args.join(" ") : "ship it";
         print(" " + "_".repeat(msg.length + 2));
@@ -1022,7 +1026,7 @@
       run: function () { print("steeping... HTTP 418: this machine IS a teapot.", "warn"); }
     },
     mute: {
-      hidden: true, silent: true, desc: "",
+      silent: true, g: "shell", desc: "toggle sound",
       run: function () {
         muted = !muted;
         try { localStorage.setItem("muted", muted ? "1" : "0"); } catch (e) { /* private mode */ }
