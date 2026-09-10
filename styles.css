@@ -245,3 +245,7 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
   background: #eaf7ff; animation: flashout .65s ease-out forwards;
 }
 @keyframes flashout { from { opacity: .8 } to { opacity: 0 } }
+
+/* Two-column rows hang their wrapped text under the second column, so it does
+   not fall back to column zero and read as another command name. */
+.line.row { padding-left: var(--indent); text-indent: calc(var(--indent) * -1); }

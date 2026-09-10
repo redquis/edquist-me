@@ -625,6 +625,16 @@
     print();
   }
 
+  /* Two column rows: the wrapped remainder has to hang under the second column.
+     Left to itself it returns to column zero, where it reads as another name. */
+  function printRow(label, value, width, cls) {
+    const indent = width + 2;
+    const el = print("  " + label + " ".repeat(Math.max(1, width - label.length)) + value, cls);
+    el.classList.add("row");
+    el.style.setProperty("--indent", indent + "ch");
+    return el;
+  }
+
   function cat(name) {
     const file = FILES[name] || FILES[name + ".txt"];
     if (!file) return print("cat: " + name + ": no such file (try `ls`)", "err");
@@ -646,7 +656,7 @@
           print();
           print(section[1], "bright");
           inSection.forEach(function (name) {
-            print("  " + name + " ".repeat(width - name.length + 4) + COMMANDS[name].desc);
+            printRow(name, COMMANDS[name].desc, width + 4);
           });
         });
         print();
@@ -693,7 +703,7 @@
       run: function () {
         print();
         Object.keys(FILES).forEach(function (name) {
-          print("  " + name + " ".repeat(14 - name.length) + FILES[name].length + " lines");
+          printRow(name, FILES[name].length + " lines", 14);
         });
         print();
         print("read one with: cat about.txt", "dim");
@@ -893,7 +903,7 @@
           print("ocarina <song>", "bright");
           print();
           Object.keys(SONGS).forEach(function (k) {
-            print("  " + k + " ".repeat(10 - k.length) + SONGS[k][0]);
+            printRow(k, SONGS[k][0], 10);
           });
           print();
           if (!key) return print("pick one. try: ocarina storms", "dim");
