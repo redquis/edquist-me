@@ -653,9 +653,12 @@
         SECTIONS.forEach(function (section) {
           const inSection = names.filter(function (k) { return (COMMANDS[k].g || "shell") === section[0]; });
           if (!inSection.length) return;
+          // exit reads as the end of the list wherever it is defined.
+          const ordered = inSection.filter(function (k) { return k !== "exit"; })
+            .concat(inSection.indexOf("exit") === -1 ? [] : ["exit"]);
           print();
           print(section[1], "bright");
-          inSection.forEach(function (name) {
+          ordered.forEach(function (name) {
             printRow(name, COMMANDS[name].desc, width + 4);
           });
         });
@@ -699,7 +702,7 @@
     games: { g: "me", desc: "→ illustriousgamesllc.com", run: function () { openLink("games"); } },
     email: { g: "me", desc: "→ ryan@edquist.me", run: function () { openLink("email"); } },
     ls: {
-      g: "me", desc: "list files",
+      g: "shell", desc: "list files",
       run: function () {
         print();
         Object.keys(FILES).forEach(function (name) {
@@ -711,7 +714,7 @@
       }
     },
     cat: {
-      g: "me", desc: "read a file. try: cat about.txt",
+      g: "shell", desc: "read a file. try: cat about.txt",
       run: function (args) {
         if (!args[0]) return print("usage: cat <file>   (try `ls`)", "err");
         cat(args[0]);
@@ -937,7 +940,7 @@
       }
     },
     throw: {
-      g: "me", desc: "throw a disc, see what happens",
+      g: "fun", desc: "throw a disc, see what happens",
       run: function () {
         const discs = ["a Destroyer", "a Buzzz", "a Leopard3", "a Zone", "a beat-in Roc"];
         print("you throw " + discs[Math.floor(Math.random() * discs.length)] + "...", "dim");
