@@ -1475,7 +1475,20 @@
     render();
   }
 
-  input.addEventListener("input", render);
+  /* The whole terminal is lowercase, so the prompt is too. Folded on the way
+     in rather than with text-transform, so what is shown is what runs. The
+     caret is put back because assigning value sends it to the end, which
+     loses your place when editing mid-line. */
+  input.addEventListener("input", function () {
+    const folded = input.value.toLowerCase();
+    if (folded !== input.value) {
+      const from = input.selectionStart;
+      const to = input.selectionEnd;
+      input.value = folded;
+      try { input.setSelectionRange(from, to); } catch (e) { /* not selectable */ }
+    }
+    render();
+  });
   input.addEventListener("blur", render);
   input.addEventListener("focus", render);
 
