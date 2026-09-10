@@ -406,7 +406,55 @@
     reboot: ["Clears the screen and replays the boot sequence."],
     mute: ["Toggles sound. The setting is remembered."],
     history: ["Lists this session's commands. Ctrl+R searches them."],
-    help: ["Lists the documented commands. Roughly twenty more are not."]
+    help: ["Lists the documented commands. Roughly twenty more are not."],
+    "42": ["The answer. The question is still compiling."],
+    "88": ["Gets a speedometer to 88 mph, with the appropriate consequences."],
+    whoami: ["The one-line version: who I am and what I do."],
+    about: ["The longer version. Same text as `cat about.txt`."],
+    stack: ["The tools I reach for. Same text as `cat stack.txt`."],
+    now: ["What I am working on at the moment, roughly."],
+    links: ["Every profile worth having, with the URLs spelled out.", "Each also works as its own command."],
+    github: ["Opens my GitHub in a new tab."],
+    linkedin: ["Opens my LinkedIn in a new tab."],
+    games: ["Opens Illustrious Games, the board game studio."],
+    email: ["Starts a mail draft to ryan@edquist.me."],
+    videogames: ["Ten favourites in order, each with a line about why."],
+    boardgames: ["Five favourites in order. Mine are deliberately absent."],
+    neofetch: ["The usual system readout, for a system that is a web page."],
+    date: ["The current date and time, as the browser reports it."],
+    echo: ["Prints its arguments back. Useful for very little."],
+    snake: ["Arrows or WASD to steer, q or Escape to quit, swipe on a phone.", "Your best is remembered. The score to beat is on the board."],
+    clear: ["Empties the screen. Ctrl+L does the same."],
+    man: ["Prints the manual for a command, hidden ones included."],
+    sudo: ["Refuses, in the traditional manner."],
+    exit: ["Declines to close the tab for you."],
+    zelda: ["Opens a chest, grants the item, and counts down to the", "Ocarina of Time remake on Switch 2."],
+    xyzzy: ["The magic word from Colossal Cave. It does about as much here."],
+    fortune: ["One aphorism, drawn at random from ten."],
+    throw: ["Throws a random disc and reports where it ended up.", "Rarely where it was aimed."],
+    discgolf: ["My disc golf standing, honestly reported."],
+    top: ["A process table for a machine that is not real."],
+    git: ["Accepts status, blame, push and log. Answers are not reassuring."],
+    npm: ["Pretends to install a great many packages, then admits it."],
+    navi: ["She cycles through her lines, one per invocation, and says them", "aloud. `navisays` is the same command."],
+    navisays: ["Alias of `navi`."],
+    timecircuits: ["The DeLorean dashboard. Destination and last departed are the", "film's dates. Present time is your own clock."],
+    delorean: ["Draws the car with its doors up."],
+    gigawatts: ["Doc Brown's reaction to the power requirement."],
+    mcfly: ["Biff's greeting, such as it is."],
+    outatime: ["The licence plate."],
+    roads: ["The last line of the first film."],
+    cowsay: ["A cow says whatever you pass it, or `ship it` by default."],
+    hack: ["Bypasses nothing at all, loudly."],
+    vim: ["Points out that you cannot exit a terminal you are already inside."],
+    ":q": ["Same idea as `vim`, fewer keystrokes."],
+    pwd: ["Prints a working directory that does not exist."],
+    cd: ["There is nowhere to go."],
+    ping: ["Replies instantly, having travelled no distance."],
+    hello: ["Says hi back."],
+    tea: ["HTTP 418. The machine is a teapot."],
+    coffee: ["Declines, and recommends tea."],
+    rm: ["Refuses to delete anything, on principle."]
   };
 
   let lastCommand = "";
@@ -652,11 +700,22 @@
         const names = Object.keys(COMMANDS).filter(function (k) { return !COMMANDS[k].hidden; });
         const width = Math.max.apply(null, names.map(function (k) { return k.length; }));
         const SECTIONS = [["me", "about me"], ["fun", "for fun"], ["shell", "the shell"]];
+        // Keeps the Zelda set and the Back to the Future set each together.
+        const SECTION_ORDER = {
+          fun: ["roll", "snake", "matrix", "cowsay", "fortune", "throw",
+            "zelda", "ocarina", "navi", "88", "timecircuits", "delorean"]
+        };
         SECTIONS.forEach(function (section) {
           const inSection = names.filter(function (k) { return (COMMANDS[k].g || "shell") === section[0]; });
           if (!inSection.length) return;
           // exit reads as the end of the list wherever it is defined.
+          const declared = SECTION_ORDER[section[0]] || [];
+          const rank = function (k) {
+            const at = declared.indexOf(k);
+            return at === -1 ? declared.length : at;
+          };
           const ordered = inSection.filter(function (k) { return k !== "exit"; })
+            .sort(function (a, b) { return rank(a) - rank(b); })
             .concat(inSection.indexOf("exit") === -1 ? [] : ["exit"]);
           print();
           print(section[1], "bright");
