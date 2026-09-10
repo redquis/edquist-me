@@ -171,18 +171,20 @@
 
   // Side profile, gullwing doors up.
   const DELOREAN = [
-    "..###.....................###.........",
-    "...####.................####..........",
-    "....#####.............#####...........",
-    ".....######.........######............",
-    "........#################.............",
-    "......#####################...........",
-    "...##############################.....",
-    "..################################....",
-    "..################################....",
-    "..####...########.....########...####.",
-    ".........######.........######........",
-    ".........######.........######........"
+    "..........###...........###.....",
+    ".........####...........####....",
+    "........####.............####...",
+    "........####################....",
+    "........##................##....",
+    "........##................##....",
+    ".....########################...",
+    "...############################.",
+    "..##############################",
+    "..##############################",
+    "..###...########.....########...",
+    ".......########.....########....",
+    ".......########.....########....",
+    "........######.......######....."
   ].map(function (row) { return row.replace(/#/g, "\u2588").replace(/\./g, " "); });
 
   const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
@@ -1175,6 +1177,7 @@
   /* ---------- snake ---------- */
 
   const SNAKE_TICK = 110;
+  const SNAKE_TOP = { who: "Ryan", score: 103 };
   let snake = null;
 
   function snakeHighScore(next) {
@@ -1200,8 +1203,12 @@
       rows.push("  |" + row + "|");
     }
     const border = "  +" + "-".repeat(g.cols) + "+";
-    const status = "  score " + g.score + "   best " + g.best +
-      " ".repeat(Math.max(1, g.cols - 20)) + "q quits";
+    const mine = "score " + g.score + "   best " + g.best;
+    const top = "top  " + SNAKE_TOP.who + " " + SNAKE_TOP.score;
+    // Two lines when one would run past the board and get clipped.
+    const status = (mine.length + top.length + 3 <= g.cols)
+      ? "  " + mine + "   " + top
+      : "  " + mine + "\n  " + top;
     g.el.textContent = border + "\n" + rows.join("\n") + "\n" + border + "\n" + status;
   }
 
@@ -1239,6 +1246,11 @@
     snake = null;
     busy = false;
     print("game over. score " + g.score + ", best " + g.best + ".", g.score >= g.best ? "bright" : "warn");
+    if (g.score > SNAKE_TOP.score) {
+      print("you beat " + SNAKE_TOP.who + "'s " + SNAKE_TOP.score + ". that is going to bother him.", "bright");
+    } else {
+      print(SNAKE_TOP.who + " still holds it at " + SNAKE_TOP.score + ".", "dim");
+    }
     print();
     input.focus({ preventScroll: true });
     render();
