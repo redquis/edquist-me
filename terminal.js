@@ -1187,6 +1187,12 @@
           if (i < steps) return;
           clearInterval(timer);
           line.classList.add("bright");
+
+          // The jump itself. Sound is not motion, so it plays even when the flash
+          // is suppressed for reduced motion.
+          playNoise(0.55, { type: "lowpass", from: 7000, to: 110, q: 0.8, peak: 0.24 });
+          playNotes([[430, 0.07], [110, 0.62]], "sawtooth", 0.14, 0.003);
+
           if (!skip) {
             const flash = document.createElement("div");
             flash.className = "flash";
