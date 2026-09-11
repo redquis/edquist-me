@@ -379,6 +379,11 @@
     const rolls = [];
     for (let i = 0; i < n; i++) rolls.push(1 + Math.floor(Math.random() * sides));
     const total = rolls.reduce((a, b) => a + b, 0);
+    for (let k = 0; k < 5; k++) {
+      playNoise(0.05, { type: "bandpass", from: 2600, to: 1500, q: 3,
+        peak: 0.075, delay: k * 0.07 + Math.random() * 0.02 });
+    }
+    playNoise(0.14, { type: "lowpass", from: 900, to: 200, q: 1, peak: 0.09, delay: 0.42 });
     print("rolling " + n + "d" + sides + " ...", "dim");
     print("  [ " + rolls.join("  ") + " ]   total: " + total, "bright");
     if (n === 1 && rolls[0] === sides) print("  natural " + sides + ". the dice are feeling generous.", "warn");
@@ -527,6 +532,49 @@
   }
 
   function playJingle() { playNotes(SECRET_JINGLE, "square", 0.16, 0.012); }
+
+  /* White noise through a sweeping filter: whooshes, rattles and static are
+     shaped noise rather than pitch, so oscillators cannot make them. The
+     buffer is built once and reused. */
+  let noiseBuffer = null;
+  function noiseSource(ctx) {
+    if (!noiseBuffer) {
+      const len = Math.floor(ctx.sampleRate * 1.2);
+      noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer;
+    src.loop = true;
+    return src;
+  }
+
+  function playNoise(dur, opts) {
+    if (muted) return;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      audioCtx = audioCtx || new Ctx();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      const o = opts || {};
+      const t = audioCtx.currentTime + 0.02 + (o.delay || 0);
+      const src = noiseSource(audioCtx);
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = o.type || "bandpass";
+      filter.Q.value = o.q || 1;
+      filter.frequency.setValueAtTime(o.from || 1200, t);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(40, o.to || 300), t + dur);
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(o.peak || 0.12, t + (o.attack || 0.012));
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(filter).connect(gain).connect(audioCtx.destination);
+      src.start(t);
+      src.stop(t + dur + 0.03);
+      scheduled.push(src);
+    } catch (e) { /* no audio device */ }
+  }
 
   /* The five ocarina buttons and the pitches they map to, so the printed button
      sequence and the audio cannot drift apart. */
@@ -1029,6 +1077,7 @@
       g: "fun", desc: "throw a disc, see what happens",
       run: function () {
         const discs = ["a Destroyer", "a Buzzz", "a Leopard3", "a Zone", "a beat-in Roc"];
+        playNoise(0.5, { type: "bandpass", from: 1900, to: 260, q: 1.2, peak: 0.1 });
         print("you throw " + discs[Math.floor(Math.random() * discs.length)] + "...", "dim");
         print("  " + THROWS[Math.floor(Math.random() * THROWS.length)], "bright");
       }
@@ -1097,6 +1146,9 @@
       g: "fun", desc: "the DeLorean dashboard",
       run: function () {
         print();
+        playNotes([[660, 0.09]], "square", 0.07, 0.004);
+        playNotes([[784, 0.09]], "square", 0.07, 0.004, 0.18);
+        playNotes([[880, 0.13]], "square", 0.07, 0.004, 0.36);
         printHTML('<span class="tc-label tc-dest">DESTINATION TIME</span>');
         printHTML('<span class="tc-dest">  ' + esc(circuitDate(new Date(1985, 9, 26, 1, 21))) + "</span>");
         printHTML('<span class="tc-label tc-now">PRESENT TIME</span>');
@@ -1158,6 +1210,8 @@
     gigawatts: {
       hidden: true, desc: "",
       run: function () {
+        playNoise(0.18, { type: "highpass", from: 3200, to: 600, q: 0.8, peak: 0.13 });
+        playNotes([[1200, 0.06], [300, 0.5]], "sawtooth", 0.08, 0.004, 0.05);
         print("1.21 gigawatts?! Great Scott!", "warn");
         print("the only power source capable of generating that is a bolt of lightning.", "dim");
       }
@@ -1236,6 +1290,8 @@
         if (skip) return;
         const shell = document.getElementById("shell");
         if (!shell) return;
+        playNoise(0.14, { type: "highpass", from: 900, to: 3200, q: 0.7, peak: 0.09 });
+        playNoise(0.1, { type: "highpass", from: 2400, to: 700, q: 0.7, peak: 0.07, delay: 0.22 });
         shell.classList.add("glitching");
         setTimeout(function () { shell.classList.remove("glitching"); }, 700);
       }
@@ -1266,6 +1322,8 @@
           [1900, "you now have full control of a static HTML page. use it wisely.", "dim"],
           [2200, "mess with the best, die like the rest.", "dim"]
         ];
+        // Timed to the ACCESS GRANTED beat.
+        playNotes([[180, 0.12], [420, 0.24]], "square", 0.1, 0.008, 1.05);
         beats.forEach(function (beat) {
           setTimeout(function () { print(beat[1], beat[2]); }, beat[0]);
         });
@@ -1387,6 +1445,8 @@
     g.body.unshift(head);
     if (head.x === g.food.x && head.y === g.food.y) {
       g.score++;
+      // Rises as the snake grows, so a long run sounds like one.
+      playNotes([[520 + Math.min(g.score, 24) * 16, 0.07]], "square", 0.09, 0.004);
       if (g.score > g.best) { g.best = g.score; snakeHighScore(g.best); }
       snakeFood();
     } else {
@@ -1398,6 +1458,7 @@
   function snakeEnd() {
     const g = snake;
     clearInterval(g.timer);
+    playNotes([[392, 0.12], [330, 0.12], [262, 0.34]], "triangle", 0.12, 0.01);
     snake = null;
     busy = false;
     print("game over. score " + g.score + ", best " + g.best + ".", g.score >= g.best ? "bright" : "warn");
