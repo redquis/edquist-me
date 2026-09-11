@@ -506,6 +506,28 @@
     scheduled = [];
   }
 
+  /* Creating and resuming an AudioContext takes real time, and browsers only
+     allow it inside a gesture. Left until the first sound, that cost lands on
+     the first command you run and it arrives late. Warmed on the first key or
+     click instead, with a silent tick, which also satisfies iOS. */
+  let audioPrimed = false;
+  function primeAudio() {
+    if (audioPrimed) return;
+    audioPrimed = true;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      audioCtx = audioCtx || new Ctx();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.0001;
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.02);
+    } catch (e) { /* no audio device */ }
+  }
+
   function playNotes(notes, wave, peak, attack, delay) {
     if (muted) return;
     try {
@@ -1633,6 +1655,7 @@
   input.addEventListener("focus", render);
 
   input.addEventListener("keydown", function (e) {
+    primeAudio();
     if (snake) {
       e.preventDefault();
       if (e.key === "q" || e.key === "Escape") return snakeEnd();
@@ -1710,6 +1733,7 @@
 
   // Tapping the screen focuses the invisible input so mobile keyboards open.
   document.addEventListener("click", function (e) {
+    primeAudio();
     if (e.target.closest("a, button")) return;
     if (window.getSelection && String(window.getSelection())) return;
     input.focus({ preventScroll: true });
