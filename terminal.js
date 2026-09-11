@@ -1249,8 +1249,6 @@
 
   const SNAKE_TICK = 110;
   const SNAKE_TOP = { who: "Ryan", score: 103 };
-  // Two characters per cell, so a step up covers the same ground as a step across.
-  const SNAKE_CELL = 2;
   let snake = null;
 
   function snakeHighScore(next) {
@@ -1267,15 +1265,15 @@
     for (let y = 0; y < g.rows; y++) {
       let row = "";
       for (let x = 0; x < g.cols; x++) {
-        if (g.food.x === x && g.food.y === y) { row += "**"; continue; }
+        if (g.food.x === x && g.food.y === y) { row += "*"; continue; }
         const onBody = g.body.some(function (c, i) { return i > 0 && c.x === x && c.y === y; });
-        if (g.body[0].x === x && g.body[0].y === y) row += "@@";
-        else if (onBody) row += "oo";
-        else row += "  ";
+        if (g.body[0].x === x && g.body[0].y === y) row += "@";
+        else if (onBody) row += "o";
+        else row += " ";
       }
       rows.push("  |" + row + "|");
     }
-    const width = g.cols * SNAKE_CELL;
+    const width = g.cols;
     const border = "  +" + "-".repeat(width) + "+";
     const mine = "score " + g.score + "   best " + g.best;
     const top = "top  " + SNAKE_TOP.who + " " + SNAKE_TOP.score;
@@ -1307,13 +1305,30 @@
     if (head.x === g.food.x && head.y === g.food.y) {
       g.score++;
       if (g.score > g.best) { g.best = g.score; snakeHighScore(g.best); }
-      snakeFood();
+      const lineH = parseFloat(getComputedStyle(el).lineHeight);
+    const charW = charCellWidth();
+    snake.vertCost = (lineH && charW) ? Math.max(1, Math.min(2.6, lineH / charW)) : 1.9;
+
+    snakeFood();
     } else {
       g.body.pop();
     }
     snakeDraw();
   }
 
+  /* A character cell is roughly twice as tall as it is wide, so moving up or
+     down covers twice the ground per step. Rather than widen the cells, a
+     vertical step costs proportionally more ticks, which matches the speed on
+     screen while leaving the board looking like a terminal. */
+  function snakeTick() {
+    const g = snake;
+    if (!g) return;
+    g.acc += 1;
+    const cost = g.next.y !== 0 ? g.vertCost : 1;
+    if (g.acc < cost) return;
+    g.acc -= cost;
+    snakeStep();
+  }
   function snakeEnd() {
     const g = snake;
     clearInterval(g.timer);
@@ -1345,19 +1360,18 @@
 
   function startSnake() {
     // Sized to the terminal so it never overflows a phone.
-    const chars = Math.floor(screen.clientWidth / charCellWidth()) - 4;
-    const cols = Math.max(10, Math.min(22, Math.floor(chars / SNAKE_CELL)));
-    const rows = Math.max(9, Math.min(15, Math.round(cols * 0.7)));
+    const cols = Math.max(16, Math.min(34, Math.floor(screen.clientWidth / charCellWidth()) - 4));
+    const rows = Math.max(9, Math.min(16, Math.round(cols * 0.5)));
     const el = print("", "snake");
     snake = {
       cols: cols, rows: rows, el: el, score: 0, best: snakeHighScore(),
-      dir: { x: 1, y: 0 }, next: { x: 1, y: 0 },
+      dir: { x: 1, y: 0 }, next: { x: 1, y: 0 }, acc: 0, vertCost: 1,
       body: [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }]
     };
     snakeFood();
     snakeDraw();
     busy = true;
-    snake.timer = setInterval(snakeStep, SNAKE_TICK);
+    snake.timer = setInterval(snakeTick, SNAKE_TICK);
 
     // Swipes, so it is playable without a keyboard.
     let sx = 0, sy = 0;
