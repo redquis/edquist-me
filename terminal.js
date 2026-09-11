@@ -1284,8 +1284,8 @@
       '" fill="none" stroke="currentColor" stroke-width="0.12" opacity=".55"/>' +
       '<g fill="currentColor">' + cells + "</g></svg>";
 
-    g.statusEl.textContent = "  score " + g.score + "   best " + g.best +
-      "   top  " + SNAKE_TOP.who + " " + SNAKE_TOP.score;
+    g.statusEl.textContent = "  score " + g.score + "  best " + g.best +
+      "  top " + SNAKE_TOP.who + " " + SNAKE_TOP.score + "  q quits";
   }
 
   function snakeFood() {
@@ -1348,7 +1348,9 @@
 
   function startSnake() {
     const el = print("", "snake");
-    const statusEl = print("", "dim");
+    const statusEl = print("", "dim row");
+    // Any wrap hangs under the first column rather than back at the margin.
+    statusEl.style.setProperty("--indent", "2ch");
     snake = {
       cols: SNAKE_COLS, rows: SNAKE_ROWS, el: el, statusEl: statusEl,
       score: 0, best: snakeHighScore(),
