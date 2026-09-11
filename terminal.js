@@ -1247,8 +1247,14 @@
 
   /* ---------- snake ---------- */
 
-  const SNAKE_TICK = 110;
+  /* Drawn as SVG on a square grid. Text cells cannot be square, a glyph being
+     about 0.6 as wide as the line is tall, so on a character board a step up
+     covered nearly twice the ground of a step across. Timing could match the
+     speed but not the stride: a 17px hop still read as faster than a 9px one. */
+  const SNAKE_TICK = 115;
   const SNAKE_TOP = { who: "Ryan", score: 103 };
+  const SNAKE_COLS = 26;
+  const SNAKE_ROWS = 17;
   let snake = null;
 
   function snakeHighScore(next) {
@@ -1261,27 +1267,25 @@
 
   function snakeDraw() {
     const g = snake;
-    const rows = [];
-    for (let y = 0; y < g.rows; y++) {
-      let row = "";
-      for (let x = 0; x < g.cols; x++) {
-        if (g.food.x === x && g.food.y === y) { row += "*"; continue; }
-        const onBody = g.body.some(function (c, i) { return i > 0 && c.x === x && c.y === y; });
-        if (g.body[0].x === x && g.body[0].y === y) row += "@";
-        else if (onBody) row += "o";
-        else row += " ";
-      }
-      rows.push("  |" + row + "|");
-    }
-    const width = g.cols;
-    const border = "  +" + "-".repeat(width) + "+";
-    const mine = "score " + g.score + "   best " + g.best;
-    const top = "top  " + SNAKE_TOP.who + " " + SNAKE_TOP.score;
-    // Two lines when one would run past the board and get clipped.
-    const status = (mine.length + top.length + 3 <= width)
-      ? "  " + mine + "   " + top
-      : "  " + mine + "\n  " + top;
-    g.el.textContent = border + "\n" + rows.join("\n") + "\n" + border + "\n" + status;
+    let cells = "";
+    g.body.forEach(function (c, i) {
+      const inset = i === 0 ? 0.04 : 0.16;
+      const size = 1 - inset * 2;
+      cells += '<rect x="' + (c.x + inset).toFixed(2) + '" y="' + (c.y + inset).toFixed(2) +
+        '" width="' + size.toFixed(2) + '" height="' + size.toFixed(2) + '" rx="0.18"' +
+        (i === 0 ? "" : ' opacity=".72"') + "/>";
+    });
+    cells += '<rect x="' + (g.food.x + 0.26) + '" y="' + (g.food.y + 0.26) +
+      '" width="0.48" height="0.48" rx="0.24" class="food"/>';
+
+    g.el.innerHTML = '<svg viewBox="-0.2 -0.2 ' + (g.cols + 0.4) + " " + (g.rows + 0.4) +
+      '" role="img" aria-label="snake board">' +
+      '<rect x="-0.1" y="-0.1" width="' + (g.cols + 0.2) + '" height="' + (g.rows + 0.2) +
+      '" fill="none" stroke="currentColor" stroke-width="0.12" opacity=".55"/>' +
+      '<g fill="currentColor">' + cells + "</g></svg>";
+
+    g.statusEl.textContent = "  score " + g.score + "   best " + g.best +
+      "   top  " + SNAKE_TOP.who + " " + SNAKE_TOP.score;
   }
 
   function snakeFood() {
@@ -1295,6 +1299,7 @@
 
   function snakeStep() {
     const g = snake;
+    if (!g) return;
     g.dir = g.next;
     const head = { x: g.body[0].x + g.dir.x, y: g.body[0].y + g.dir.y };
     const hitWall = head.x < 0 || head.y < 0 || head.x >= g.cols || head.y >= g.rows;
@@ -1305,30 +1310,13 @@
     if (head.x === g.food.x && head.y === g.food.y) {
       g.score++;
       if (g.score > g.best) { g.best = g.score; snakeHighScore(g.best); }
-      const lineH = parseFloat(getComputedStyle(el).lineHeight);
-    const charW = charCellWidth();
-    snake.vertCost = (lineH && charW) ? Math.max(1, Math.min(2.6, lineH / charW)) : 1.9;
-
-    snakeFood();
+      snakeFood();
     } else {
       g.body.pop();
     }
     snakeDraw();
   }
 
-  /* A character cell is roughly twice as tall as it is wide, so moving up or
-     down covers twice the ground per step. Rather than widen the cells, a
-     vertical step costs proportionally more ticks, which matches the speed on
-     screen while leaving the board looking like a terminal. */
-  function snakeTick() {
-    const g = snake;
-    if (!g) return;
-    g.acc += 1;
-    const cost = g.next.y !== 0 ? g.vertCost : 1;
-    if (g.acc < cost) return;
-    g.acc -= cost;
-    snakeStep();
-  }
   function snakeEnd() {
     const g = snake;
     clearInterval(g.timer);
@@ -1359,19 +1347,18 @@
   }
 
   function startSnake() {
-    // Sized to the terminal so it never overflows a phone.
-    const cols = Math.max(16, Math.min(34, Math.floor(screen.clientWidth / charCellWidth()) - 4));
-    const rows = Math.max(9, Math.min(16, Math.round(cols * 0.5)));
     const el = print("", "snake");
+    const statusEl = print("", "dim");
     snake = {
-      cols: cols, rows: rows, el: el, score: 0, best: snakeHighScore(),
-      dir: { x: 1, y: 0 }, next: { x: 1, y: 0 }, acc: 0, vertCost: 1,
-      body: [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }]
+      cols: SNAKE_COLS, rows: SNAKE_ROWS, el: el, statusEl: statusEl,
+      score: 0, best: snakeHighScore(),
+      dir: { x: 1, y: 0 }, next: { x: 1, y: 0 },
+      body: [{ x: Math.floor(SNAKE_COLS / 2), y: Math.floor(SNAKE_ROWS / 2) }]
     };
     snakeFood();
     snakeDraw();
     busy = true;
-    snake.timer = setInterval(snakeTick, SNAKE_TICK);
+    snake.timer = setInterval(snakeStep, SNAKE_TICK);
 
     // Swipes, so it is playable without a keyboard.
     let sx = 0, sy = 0;
@@ -1388,15 +1375,6 @@
     }, { passive: true });
   }
 
-  function charCellWidth() {
-    const probe = document.createElement("span");
-    probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
-    probe.textContent = "0".repeat(50);
-    out.appendChild(probe);
-    const w = probe.getBoundingClientRect().width / 50;
-    probe.remove();
-    return w || 9;
-  }
 
   /* ---------- input ---------- */
 

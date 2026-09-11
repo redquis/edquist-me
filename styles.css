@@ -211,19 +211,23 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
 .rmatch.miss { color: #ff6b5e; }
 
 /* Snake board: fixed grid, must not reflow. */
+/* Square cells, which a character grid cannot give: a glyph is about 0.6 as
+   wide as the line is tall, so vertical steps covered twice the ground. */
 .line.snake {
-  white-space: pre;
   min-height: 0;
-  line-height: 1.15;
   color: var(--fg-bright);
-  overflow: hidden;
   touch-action: none;
+  margin: 4px 0 2px;
+}
+.line.snake svg {
+  display: block;
+  width: min(430px, 100%);
+  height: auto;
   /* Opaque, or the matrix rain shows straight through the play area. */
   background: rgba(3, 6, 3, .82);
-  display: inline-block;
-  padding: 6px 10px 8px 0;
   border-radius: 3px;
 }
+.line.snake .food { opacity: .9; }
 
 /* Time circuit display: the dashboard's own colours, not the theme's. */
 .tc-label { color: inherit; opacity: .75; font-size: .82em; letter-spacing: .12em; }
