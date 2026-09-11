@@ -223,6 +223,9 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
   display: block;
   width: min(430px, 100%);
   height: auto;
+  /* The board is redrawn every tick, so a touch landing on the SVG would have
+     its target detached mid-gesture and never reach the listener on the line. */
+  pointer-events: none;
   /* Opaque, or the matrix rain shows straight through the play area. */
   background: rgba(3, 6, 3, .82);
   border-radius: 3px;
