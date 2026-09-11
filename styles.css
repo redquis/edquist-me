@@ -256,3 +256,14 @@ html[data-theme="amber"] .line.banner { filter: drop-shadow(0 0 7px rgba(255, 17
 /* Two-column rows hang their wrapped text under the second column, so it does
    not fall back to column zero and read as another command name. */
 .line.row { padding-left: var(--indent); text-indent: calc(var(--indent) * -1); }
+
+/* A brief déjà vu, for `glitch`. */
+.shell.glitching { animation: glitch .7s steps(2, end) 3; }
+@keyframes glitch {
+  0%   { transform: none; filter: none; }
+  20%  { transform: translate(-2px, 1px) skewX(-0.6deg); filter: hue-rotate(25deg); }
+  45%  { transform: translate(3px, -1px); filter: none; }
+  70%  { transform: translate(-1px, 0) skewX(0.4deg); filter: hue-rotate(-20deg); }
+  100% { transform: none; filter: none; }
+}
+@media (prefers-reduced-motion: reduce) { .shell.glitching { animation: none; } }

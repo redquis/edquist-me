@@ -81,6 +81,12 @@
     "                                                           ▀▀                               "
   ];
 
+  const WAKE_UP = [
+    ["Wake up, Neo...", 1300],
+    ["The Matrix has you...", 1500],
+    ["Follow the white rabbit.", 1500],
+    ["Knock, knock, Neo.", 900]
+  ];
   const FORTUNES = [
     "there are two hard problems in computer science, and off by one errors.",
     "it worked on my machine, so I am shipping my machine.",
@@ -405,6 +411,12 @@
   };
 
   const MANUAL = {
+    neo: ["The wake-up call, typed out at the pace it was meant to be read."],
+    redpill: ["Takes the red pill. The rain turns to a storm."],
+    bluepill: ["Takes the blue pill. The rain stops."],
+    spoon: ["There is no spoon."],
+    agent: ["Agent Smith, saying your name the way only he does."],
+    glitch: ["A cat goes past twice. The screen agrees with you."],
     cat: ["Prints one of the files listed by `ls`."],
     ls: ["Lists the readable files. Pair with `cat`."],
     roll: ["Rolls N dice of M sides. Defaults to 1d6.", "N is capped at 20, M at 1000."],
@@ -714,8 +726,9 @@
         const SECTIONS = [["me", "about me"], ["fun", "for fun"], ["shell", "the shell"]];
         // Keeps the Zelda set and the Back to the Future set each together.
         const SECTION_ORDER = {
-          fun: ["roll", "snake", "matrix", "cowsay", "fortune", "throw",
-            "zelda", "ocarina", "navi", "88", "timecircuits", "delorean"]
+          fun: ["roll", "snake", "cowsay", "fortune", "throw",
+            "zelda", "ocarina", "navi", "88", "timecircuits", "delorean",
+            "matrix", "neo", "redpill", "bluepill"]
         };
         SECTIONS.forEach(function (section) {
           const inSection = names.filter(function (k) { return (COMMANDS[k].g || "shell") === section[0]; });
@@ -1160,6 +1173,72 @@
     roads: {
       hidden: true, desc: "",
       run: function () { print("where we're going, we don't need roads.", "bright"); }
+    },
+    neo: {
+      g: "fun", silent: true, desc: "wake up",
+      run: function () {
+        const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        busy = true;
+        let i = 0;
+        const next = function () {
+          if (i >= WAKE_UP.length) {
+            busy = false;
+            print();
+            input.focus({ preventScroll: true });
+            render();
+            return;
+          }
+          const line = WAKE_UP[i++];
+          if (skip) { print(line[0], "bright"); return next(); }
+          typeLine(line[0], "bright", 45).then(function () {
+            setTimeout(next, line[1]);
+          });
+        };
+        next();
+      }
+    },
+    redpill: {
+      g: "fun", silent: true, desc: "stay in wonderland",
+      run: function () {
+        print("you stay in Wonderland, and I show you how deep the rabbit hole goes.", "bright");
+        if (window.rain) window.rain.set(2);
+        print("  the rain is heavier now. `matrix` cycles it.", "dim");
+      }
+    },
+    bluepill: {
+      g: "fun", silent: true, desc: "wake up in your bed",
+      run: function () {
+        print("the story ends. you wake up in your bed and believe whatever you want to believe.", "bright");
+        if (window.rain) window.rain.set(0);
+        print("  the rain has stopped. `matrix` brings it back.", "dim");
+      }
+    },
+    spoon: {
+      hidden: true, desc: "",
+      run: function () {
+        print("do not try and bend the spoon, that is impossible.", "dim");
+        print("instead, only try to realise the truth: there is no spoon.", "bright");
+      }
+    },
+    agent: {
+      hidden: true, desc: "",
+      run: function () {
+        print("Mr. Anderson.", "warn");
+        print("that is the sound of inevitability.", "dim");
+      }
+    },
+    glitch: {
+      hidden: true, desc: "",
+      run: function () {
+        print("a black cat went past us, and then another that looked just like it.", "dim");
+        print("déjà vu.", "bright");
+        const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (skip) return;
+        const shell = document.getElementById("shell");
+        if (!shell) return;
+        shell.classList.add("glitching");
+        setTimeout(function () { shell.classList.remove("glitching"); }, 700);
+      }
     },
     cowsay: {
       g: "fun", desc: "a cow says what you tell it",
