@@ -385,9 +385,20 @@
     }
     playNoise(0.26, { type: "lowpass", from: 1200, to: 170, q: 1, peak: 0.32, delay: 0.72 });
     print("rolling " + n + "d" + sides + " ...", "dim");
-    print("  [ " + rolls.join("  ") + " ]   total: " + total, "bright");
-    if (n === 1 && rolls[0] === sides) print("  natural " + sides + ". the dice are feeling generous.", "warn");
-    if (n === 1 && rolls[0] === 1) print("  a 1. this is why we playtest.", "warn");
+
+    const reveal = function () {
+      print("  [ " + rolls.join("  ") + " ]   total: " + total, "bright");
+      if (n === 1 && rolls[0] === sides) print("  natural " + sides + ". the dice are feeling generous.", "warn");
+      if (n === 1 && rolls[0] === 1) print("  a 1. this is why we playtest.", "warn");
+      busy = false;
+      input.focus({ preventScroll: true });
+      render();
+    };
+
+    // Land the result as the rattle settles. Muted, there is nothing to wait for.
+    if (muted) return reveal();
+    busy = true;
+    setTimeout(reveal, ROLL_SETTLE);
   }
 
   /* The secret-found fanfare, synthesised rather than shipped as an audio file:
@@ -798,7 +809,7 @@
         const SECTION_ORDER = {
           fun: ["roll", "snake", "cowsay", "fortune", "throw",
             "zelda", "ocarina", "navi", "88", "timecircuits", "delorean",
-            "matrix", "neo", "redpill", "bluepill"]
+            "matrix", "neo", "redpill", "bluepill", "glitch"]
         };
         SECTIONS.forEach(function (section) {
           const inSection = names.filter(function (k) { return (COMMANDS[k].g || "shell") === section[0]; });
@@ -1310,7 +1321,7 @@
       }
     },
     glitch: {
-      hidden: true, desc: "",
+      g: "fun", desc: "deja vu",
       run: function () {
         print("a black cat went past us, and then another that looked just like it.", "dim");
         print("déjà vu.", "bright");
@@ -1415,6 +1426,7 @@
      about 0.6 as wide as the line is tall, so on a character board a step up
      covered nearly twice the ground of a step across. Timing could match the
      speed but not the stride: a 17px hop still read as faster than a 9px one. */
+  const ROLL_SETTLE = 980;
   const SNAKE_TICK = 115;
   const SNAKE_TOP = { who: "Ryan", score: 103 };
   const SNAKE_COLS = 26;
