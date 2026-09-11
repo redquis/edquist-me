@@ -926,7 +926,7 @@
       }
     },
     man: {
-      silent: true, g: "shell", desc: "read the manual. try: man ocarina",
+ g: "shell", desc: "read the manual. try: man ocarina",
       run: function (args) {
         const name = (args[0] || "").toLowerCase();
         if (!name) return print("what manual page do you want?", "err");
@@ -966,7 +966,7 @@
     },
     zelda: {
       // Silent so the fanfare lands on the item, not before the chest opens.
-      silent: true, g: "fun", desc: "open the chest",
+ g: "fun", desc: "open the chest",
       run: function () {
         print("you open the chest...", "dim");
         // Drawn, not typed: box characters cannot join across a 1.65 line height,
@@ -984,7 +984,7 @@
       }
     },
     ocarina: {
-      silent: true, g: "fun", desc: "play a Zelda song. try: ocarina storms",
+ g: "fun", desc: "play a Zelda song. try: ocarina storms",
       run: function (args) {
         const key = (args[0] || "").toLowerCase();
         if (!SONGS[key]) {
@@ -1075,7 +1075,7 @@
       }
     },
     navi: {
-      silent: true, g: "fun", desc: "hey! listen!",
+ g: "fun", desc: "hey! listen!",
       run: function () {
         const line = NAVI_LINES[naviIndex % NAVI_LINES.length];
         naviIndex++;
@@ -1090,11 +1090,11 @@
       }
     },
     navisays: {
-      hidden: true, silent: true, desc: "",
+      hidden: true, desc: "",
       run: function () { COMMANDS.navi.run(); }
     },
     timecircuits: {
-      g: "fun", silent: true, desc: "the DeLorean dashboard",
+      g: "fun", desc: "the DeLorean dashboard",
       run: function () {
         print();
         printHTML('<span class="tc-label tc-dest">DESTINATION TIME</span>');
@@ -1107,7 +1107,7 @@
       }
     },
     88: {
-      g: "fun", silent: true, desc: "get up to 88 mph",
+      g: "fun", desc: "get up to 88 mph",
       run: function () {
         const line = print("", "warn");
         const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1149,7 +1149,7 @@
       }
     },
     delorean: {
-      g: "fun", silent: true, desc: "doors up",
+      g: "fun", desc: "doors up",
       run: function () {
         print("", "delorean").innerHTML = DELOREAN_SVG;
         print("  OUTATIME", "dim");
@@ -1175,7 +1175,7 @@
       run: function () { print("where we're going, we don't need roads.", "bright"); }
     },
     neo: {
-      g: "fun", silent: true, desc: "wake up",
+      g: "fun", desc: "wake up",
       run: function () {
         const skip = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         busy = true;
@@ -1198,7 +1198,7 @@
       }
     },
     redpill: {
-      g: "fun", silent: true, desc: "stay in wonderland",
+      g: "fun", desc: "stay in wonderland",
       run: function () {
         print("you stay in Wonderland, and I show you how deep the rabbit hole goes.", "bright");
         if (window.rain) window.rain.set(2);
@@ -1206,7 +1206,7 @@
       }
     },
     bluepill: {
-      g: "fun", silent: true, desc: "wake up in your bed",
+      g: "fun", desc: "wake up in your bed",
       run: function () {
         print("the story ends. you wake up in your bed and believe whatever you want to believe.", "bright");
         if (window.rain) window.rain.set(0);
@@ -1256,7 +1256,7 @@
     },
     hack: {
       // Silent so the fanfare lands after the sequence rather than before it.
-      hidden: true, silent: true, desc: "",
+      hidden: true, desc: "",
       run: function () {
         const beats = [
           [0, "searching for the Gibson...", "dim"],
@@ -1269,7 +1269,6 @@
         beats.forEach(function (beat) {
           setTimeout(function () { print(beat[1], beat[2]); }, beat[0]);
         });
-        setTimeout(secretFound, 2500);
         // A burst, not a new resting state: storm is hard to read through.
         if (window.rain) {
           const before = window.rain.level;
@@ -1283,23 +1282,23 @@
       run: function () { print("42. the question is still compiling.", "warn"); }
     },
     vim: {
-      hidden: true, silent: true, desc: "",
+      hidden: true, desc: "",
       run: function () { print("you are already in a terminal you cannot exit. see `exit`.", "err"); }
     },
     ":q": {
-      hidden: true, silent: true, desc: "",
+      hidden: true, desc: "",
       run: function () { print("this is a browser. the tab close button is over there.", "err"); }
     },
-    pwd: { hidden: true, silent: true, desc: "", run: function () { print("/home/ryan"); } },
-    cd: { hidden: true, silent: true, desc: "", run: function () { print("there is nowhere else to go.", "dim"); } },
-    ping: { hidden: true, silent: true, desc: "", run: function () { print("pong. 0.0ms. it is all running in your browser."); } },
-    hello: { hidden: true, silent: true, desc: "", run: function () { print("hi."); } },
+    pwd: { hidden: true, desc: "", run: function () { print("/home/ryan"); } },
+    cd: { hidden: true, desc: "", run: function () { print("there is nowhere else to go.", "dim"); } },
+    ping: { hidden: true, desc: "", run: function () { print("pong. 0.0ms. it is all running in your browser."); } },
+    hello: { hidden: true, desc: "", run: function () { print("hi."); } },
     tea: {
       hidden: true, desc: "",
       run: function () { print("steeping... HTTP 418: this machine IS a teapot.", "warn"); }
     },
     mute: {
-      silent: true, g: "shell", desc: "toggle sound",
+ g: "shell", desc: "toggle sound",
       run: function () {
         muted = !muted;
         try { localStorage.setItem("muted", muted ? "1" : "0"); } catch (e) { /* private mode */ }
@@ -1528,9 +1527,6 @@
     if (name !== "share") lastCommand = line;
     try { cmd.run(parts.slice(1)); }
     catch (err) { print("unhandled: " + err.message, "err"); }
-
-    // Every undocumented command is a secret worth announcing.
-    if (cmd.hidden && !cmd.silent) secretFound();
   }
 
   function complete() {
@@ -1582,7 +1578,6 @@
       input.value = "";
       print("↑ ↑ ↓ ↓ ← → ← → B A", "bright");
       print("30 lives granted. you still only get the one tab.", "dim");
-      secretFound();
       render();
       return;
     }
