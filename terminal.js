@@ -381,9 +381,9 @@
     const total = rolls.reduce((a, b) => a + b, 0);
     for (let k = 0; k < 5; k++) {
       playNoise(0.05, { type: "bandpass", from: 2600, to: 1500, q: 3,
-        peak: 0.075, delay: k * 0.07 + Math.random() * 0.02 });
+        peak: 0.15, delay: k * 0.07 + Math.random() * 0.02 });
     }
-    playNoise(0.14, { type: "lowpass", from: 900, to: 200, q: 1, peak: 0.09, delay: 0.42 });
+    playNoise(0.14, { type: "lowpass", from: 900, to: 200, q: 1, peak: 0.17, delay: 0.42 });
     print("rolling " + n + "d" + sides + " ...", "dim");
     print("  [ " + rolls.join("  ") + " ]   total: " + total, "bright");
     if (n === 1 && rolls[0] === sides) print("  natural " + sides + ". the dice are feeling generous.", "warn");
@@ -1077,7 +1077,7 @@
       g: "fun", desc: "throw a disc, see what happens",
       run: function () {
         const discs = ["a Destroyer", "a Buzzz", "a Leopard3", "a Zone", "a beat-in Roc"];
-        playNoise(0.5, { type: "bandpass", from: 1900, to: 260, q: 1.2, peak: 0.1 });
+        playNoise(0.5, { type: "bandpass", from: 1900, to: 260, q: 1.2, peak: 0.2 });
         print("you throw " + discs[Math.floor(Math.random() * discs.length)] + "...", "dim");
         print("  " + THROWS[Math.floor(Math.random() * THROWS.length)], "bright");
       }
